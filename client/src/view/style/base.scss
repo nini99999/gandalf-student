@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  outline: 0;
+}
+
+body {
+  font-family: PingFang SC, Microsoft YaHei;
+  background-color: #f2f2f2;
+}
+
+body, input, select, textarea {
+  font-size: 14px;
+  color: $color-title;
+}
+
+input[readonly], textarea[readonly] {
+  border-color: $color-back-hover !important;
+  cursor: not-allowed;
+}
+
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+  font-family: PingFang SC, Microsoft YaHei;
+  font-weight: normal;
+  color: #919CB3;
+}
+
+textarea {
+  resize: none;
+  min-height: 100px;
+  padding: 6px;
+  font-family: PingFang SC, Microsoft YaHei;
+}
+
+a {
+  color: $color-title;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+}
+
+.dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  border-radius: 2px;
+  background-color: white;
+  transform: translate(-50%, -50%);
+}
+
+.popup {
+  box-shadow: 1px 2px 10px rgba(191, 192, 204, 0.6);
+  z-index: 3000;
+
+  &.up {
+    box-shadow: 1px -2px 10px rgba(191, 192, 204, 0.6);
+  }
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  border: $style-border;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: $color-back-hover;
+    border-color: $color-border-hover;
+  }
+
+  &.circle {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 20px;
+  }
+
+  &.normal {
+    min-width: 90px;
+    height: 40px;
+    margin: 0 8px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+
+  &.small {
+    height: 32px;
+    margin: 0 2px;
+    padding: 0 12px;
+    font-size: 12px;
+
+    i {
+      font-size: 12px;
+    }
+  }
+
+  &.ok {
+    color: $color-white;
+    background-color: $color-blue;
+  }
+
+  &.ok2 {
+    color: $color-blue;
+    border-color: $color-blue;
+  }
+
+  &.red {
+    color: $color-white;
+    background-color: $color-red;
+  }
+
+  &.off {
+    color: $color-off;
+    cursor: not-allowed;
+    background-color: $color-back-hover;
+    border-color: $color-border-off;
+  }
+}
+
+.link {
+  color: $color-blue;
+  border-bottom: 1px solid transparent;
+
+  &:hover {
+    border-bottom: 1px solid $color-blue;
+  }
+}
+
+.input {
+  height: 40px;
+  border-radius: 2px;
+  border: $style-border;
+  transition: all 0.3s;
+  padding-left: 16px;
+  padding-right: 16px;
+  background-color: $color-white;
+
+  &:hover {
+    border-color: $color-border-hover;
+  }
+
+  &.on, &:focus {
+    border-color: $color-blue;
+  }
+
+  &.readonly {
+    border-color: $color-back-hover !important;
+    cursor: not-allowed;
+  }
+}
+
+.badge {
+  margin-left: 16px;
+  padding: 0 6px;
+  height: 20px;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  background-color: $color-tip-red;
+}
