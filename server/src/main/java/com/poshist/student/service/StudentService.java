@@ -514,7 +514,7 @@ public class StudentService {
      * @return
      */
 
-    private Long varDepartment(Long userDepartmentId) {
+    public  Long varDepartment(Long userDepartmentId) {
 //        if (Constant.DEPARTMENT_SCHOOL_ID == userDepartmentId || Constant.DEPARTMENT_SECURITY_ID == userDepartmentId) {
 //            userDepartmentId = null;
 //        }
@@ -524,7 +524,7 @@ public class StudentService {
         return userDepartmentId;
     }
 
-    private void findInDepartment(List<Predicate> list, Join<Student, Department> join, Long userDepartmentId) {
+    public void findInDepartment(List<Predicate> list, Join<Student, Department> join, Long userDepartmentId) {
         Path<Long> departmentId = join.get("id");
         if (null != userDepartmentId) {
             Department rootDepartment = departmentDao.findById(userDepartmentId).get();

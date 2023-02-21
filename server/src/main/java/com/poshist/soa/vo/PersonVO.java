@@ -50,7 +50,7 @@ public class PersonVO {
         setPersonName(student.getName());
         //setDeptId("5a9dc528-e7ad-4952-9f21-a885b6564a1c");
         if (null == student.getDepartment().getThirdId()) {
-            setDeptId("5a9dc528-e7ad-4952-9f21-a885b6564a1c");
+            setDeptId("6fe18bf6-4616-4d68-9a0d-e42a55dc31ca");
         } else {
             setDeptId(student.getDepartment().getThirdId());
         }

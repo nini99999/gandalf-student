@@ -4,6 +4,7 @@ import com.poshist.BI.service.BIService;
 import com.poshist.BI.vo.QueryVO;
 import com.poshist.common.vo.BaseVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +23,10 @@ public class BIController {
      * @return
      */
     @RequestMapping("/getStudentCount")
-    public BaseVO getStudentCount(){
+    public BaseVO getStudentCount(Authentication auth){
+        String userName = (String) auth.getPrincipal();
         BaseVO baseVO=new BaseVO();
-        baseVO.setData(biService.getCountStudent());
+        baseVO.setData(biService.getCountStudent(userName));
         return baseVO;
     }
 
@@ -33,9 +35,10 @@ public class BIController {
      * @return
      */
     @RequestMapping("/getCountStudentOutSchool")
-    public BaseVO getCountStudentOutSchool(){
+    public BaseVO getCountStudentOutSchool(Authentication auth){
+        String userName = (String) auth.getPrincipal();
         BaseVO baseVO=new BaseVO();
-        baseVO.setData(biService.getCountStudentOutSchool());
+        baseVO.setData(biService.getCountStudentOutSchool(userName));
         return baseVO;
     }
 

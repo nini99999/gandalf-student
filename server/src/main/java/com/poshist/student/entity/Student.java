@@ -12,6 +12,7 @@ import java.util.Date;
 @Table(name = "t_st_student_info")
 @EntityListeners(AuditingEntityListener.class)
 public class Student extends AbstractEntity {
+    private static final long serialVersionUID = 5906308820867822214L;
     private String name;
     private String code;
     private String nativePlace;
