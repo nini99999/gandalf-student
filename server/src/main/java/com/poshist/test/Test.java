@@ -1,7 +1,6 @@
 package com.poshist.test;
 
 import com.poshist.car.service.CarService;
-import com.poshist.common.queue.TTLQueueConfig;
 import com.poshist.soa.entity.Via;
 import com.poshist.soa.repository.ViaDao;
 import com.poshist.student.service.StudentService;
@@ -49,13 +48,5 @@ public class Test {
 //        System.out.println(topUser);
 //    }
 
-    @org.junit.Test
-    public void test(){
-        template.convertAndSend(TTLQueueConfig.ALERT_EXCHANGE, TTLQueueConfig.ALERT_QUEUE, 1, message -> {
-            // 设置超时时间 3000ms
-            message.getMessageProperties().setExpiration("3000");
-            return message;
-        });
-    }
 
 }

@@ -45,7 +45,10 @@ public class UserService {
         user.setPassword(encode.encode(defaultPassword));
         userDao.save(user);
     }
-
+    public static void  main(String[] args) throws Exception {
+        BCryptPasswordEncoder encode = new BCryptPasswordEncoder();
+        System.out.println(encode.encode("123456"));
+    }
     public UserVO getUsetById(Long id){
         User user=userDao.findById(id).get();
         return new UserVO(user);
@@ -238,7 +241,7 @@ public class UserService {
 
         Department department=user.getDepartment();
         while (true) {
-            if(Constant.DEPARTMENT_ROOT_ID==department.getId()){
+            if(Constant.DEPARTMENT_ROOT_ID.equals(department.getId())){
                 break;
             }
 
@@ -323,7 +326,7 @@ public class UserService {
         for (RoleFunction roleFunction : role.getRoleFunctions()) {
             if (roleFunction.getFunction().getId() != 0 && roleFunction.getFunction().getParentFunction().getId() != 0) {
                 for (FunctionVO parent : functionVOS) {
-                    if (parent.getId() == roleFunction.getFunction().getParentFunction().getId()) {
+                    if (parent.getId() .equals(roleFunction.getFunction().getParentFunction().getId()) ) {
                         FunctionVO functionVO = new FunctionVO(roleFunction.getFunction());
                         parent.addChild(functionVO);
                     }

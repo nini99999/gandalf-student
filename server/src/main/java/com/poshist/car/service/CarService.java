@@ -8,7 +8,6 @@ import com.poshist.car.vo.*;
 import com.poshist.common.Constant;
 import com.poshist.common.ExceptionEnum;
 import com.poshist.common.RunTimeException;
-import com.poshist.common.queue.TTLQueueConfig;
 import com.poshist.common.utils.CommonUtils;
 import com.poshist.common.utils.ExcelUtils;
 import com.poshist.common.vo.PageVO;
@@ -24,10 +23,7 @@ import com.poshist.sys.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -498,14 +494,6 @@ public class CarService {
             Date now = new Date();
             Long alertTime = carControl.getEstimateStartTime().getTime() - now.getTime() - (carControl.getAlertTime() * 60 * 1000);
             log.info("提醒时间-----------------" + CommonUtils.millisToStr(now.getTime() + alertTime));
-            template.convertAndSend(TTLQueueConfig.ALERT_EXCHANGE, TTLQueueConfig.ALERT_QUEUE, "carControl-" + data, new MessagePostProcessor() {
-                @Override
-                public Message postProcessMessage(Message message) throws AmqpException {
-                    message.getMessageProperties().setHeader("x-delay", alertTime);
-                    return message;
-                }
-            });
-
 //
 //            template.convertAndSend(TTLQueueConfig.ALERT_EXCHANGE, TTLQueueConfig.ALERT_QUEUE, "carControl-" + data, message -> {
 //
