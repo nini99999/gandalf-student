@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.ParseException;
 import java.util.Map;
 
 @RestController
@@ -71,7 +72,7 @@ public class StudentController {
         return baseVO;
     }
     @RequestMapping("/importStudent")
-    public void importStudent(@RequestParam("studentFile")MultipartFile studentFile, HttpServletResponse response) throws IOException {
+    public void importStudent(@RequestParam("studentFile")MultipartFile studentFile, HttpServletResponse response) throws IOException, ParseException {
         response.setContentType("multipart/form-data");
         response.addHeader("Content-Disposition", "attachment;filename=" + new String("rs.xls".getBytes("UTF-8"), "ISO-8859-1"));
         response.setContentType("application/octet-stream");

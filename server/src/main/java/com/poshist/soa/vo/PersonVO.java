@@ -74,7 +74,7 @@ public class PersonVO {
         }
 
         if (null == student.getMobile()) {
-            setMobile("15" + CommonUtils.generateZeroCode(9, student.getId().toString()));
+            setMobile("19" + CommonUtils.generateZeroCode(9, student.getId().toString()));
         } else {
             setMobile(student.getMobile());
         }

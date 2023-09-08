@@ -50,6 +50,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -155,7 +157,7 @@ public class StudentService {
         }
     }
 
-    public void importStudent(MultipartFile studentFile, OutputStream outputStream) throws IOException {
+    public void importStudent(MultipartFile studentFile, OutputStream outputStream) throws IOException, ParseException {
         Workbook wb = ExcelUtils.getWorkBook(studentFile);
         Sheet sheet = wb.getSheetAt(0);
         int rowCount = sheet.getPhysicalNumberOfRows();
@@ -200,7 +202,7 @@ public class StudentService {
                 rsCell.setCellValue("学生类别为空");
                 continue;
             }
-            if ("本科生".equals(cellValue)) {
+            if (" ".equals(cellValue)) {
                 student.setType(d20);
             } else if ("硕士生".equals(cellValue)) {
                 student.setType(d21);
@@ -293,20 +295,21 @@ public class StudentService {
             }
             student.setDepartment(department);
 
-            Date cellDate = row.getCell(16).getDateCellValue();
+            String cellDate = row.getCell(16).getStringCellValue();
+            SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd" );
             if (null == cellDate) {
                 rsCell.setCellValue("入学时间为空");
                 continue;
             } else {
-                student.setStartTime(cellDate);
+                student.setStartTime(sdf.parse(cellDate));
             }
 
-            cellDate = row.getCell(17).getDateCellValue();
+            cellDate = row.getCell(17).getStringCellValue();
             if (null == cellDate) {
                 rsCell.setCellValue("毕业时间为空");
                 continue;
             } else {
-                student.setEndTime(cellDate);
+                student.setEndTime(sdf.parse(cellDate));
             }
             student.setStatus(0);
 
