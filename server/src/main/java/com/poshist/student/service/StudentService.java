@@ -202,7 +202,7 @@ public class StudentService {
                 rsCell.setCellValue("学生类别为空");
                 continue;
             }
-            if (" ".equals(cellValue)) {
+            if ("本科生".equals(cellValue)) {
                 student.setType(d20);
             } else if ("硕士生".equals(cellValue)) {
                 student.setType(d21);
