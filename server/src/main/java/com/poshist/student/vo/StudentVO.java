@@ -28,8 +28,13 @@ public class StudentVO {
         setName(student.getName());
         setNativePlace(student.getNativePlace());
         setIdentityCode(student.getIdentityCode());
-        setTypeId(student.getType().getId());
-        setTypeName(student.getType().getName());
+        if(null!=student.getType()) {
+            setTypeId(student.getType().getId());
+            setTypeName(student.getType().getName());
+        }else{
+            setTypeId(20L);
+            setTypeName("本科生");
+        }
         setGenderId(student.getGender().getId());
         setGenderName(student.getGender().getName());
         setDepartmentId(student.getDepartment().getId());
