@@ -126,12 +126,12 @@ public class StudentService {
     public LeaveLimitVO getLeaveLimit(Long departmentId) {
         Department department = departmentDao.findById(departmentId).get();
         LeaveLimit leaveLimit = leaveLimitDao.findFirstByDepartment(department);
-        if (null == leaveLimit) {
-            leaveLimit = new LeaveLimit();
-            leaveLimit.setDepartment(department);
-            leaveLimit.setLimitValue(15);
-            leaveLimitDao.save(leaveLimit);
-        }
+//        if (null == leaveLimit) {
+//            leaveLimit = new LeaveLimit();
+//            leaveLimit.setDepartment(department);
+//            leaveLimit.setLimitValue(15);
+//            leaveLimitDao.save(leaveLimit);
+//        }
         return new LeaveLimitVO(leaveLimit);
     }
 
