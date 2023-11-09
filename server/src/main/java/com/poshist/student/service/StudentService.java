@@ -111,14 +111,16 @@ public class StudentService {
         //管理员
         if (1 == departmentVO.getId()) {
             for (DepartmentVO depVO : departmentVO.getChild()) {
-                if (depVO.getId() > 10) {
+                if (!"职能部门".equals(depVO.getMemo())) {
                     leaveLimitVOS.add(getLeaveLimit(depVO.getId()));
                 }
             }
         }
         //院系
         else {
-            leaveLimitVOS.add(getLeaveLimit(departmentVO.getId()));
+            if (!"职能部门".equals(departmentVO.getMemo())) {
+                leaveLimitVOS.add(getLeaveLimit(departmentVO.getId()));
+            }
         }
         return leaveLimitVOS;
     }
@@ -126,12 +128,12 @@ public class StudentService {
     public LeaveLimitVO getLeaveLimit(Long departmentId) {
         Department department = departmentDao.findById(departmentId).get();
         LeaveLimit leaveLimit = leaveLimitDao.findFirstByDepartment(department);
-//        if (null == leaveLimit) {
-//            leaveLimit = new LeaveLimit();
-//            leaveLimit.setDepartment(department);
-//            leaveLimit.setLimitValue(15);
-//            leaveLimitDao.save(leaveLimit);
-//        }
+        if (null == leaveLimit) {
+            leaveLimit = new LeaveLimit();
+            leaveLimit.setDepartment(department);
+            leaveLimit.setLimitValue(15);
+            leaveLimitDao.save(leaveLimit);
+        }
         return new LeaveLimitVO(leaveLimit);
     }
 
