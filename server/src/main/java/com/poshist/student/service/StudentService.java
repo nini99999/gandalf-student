@@ -31,10 +31,8 @@ import com.poshist.sys.vo.DepartmentVO;
 import com.poshist.sys.vo.PicVO;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,10 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -79,26 +74,28 @@ public class StudentService {
     private ViaDao viaDao;
     @Autowired
     private GateService gateService;
-    public LeaveVO changeStatus(Long id,Integer status){
-        Leave leave=leaveDao.findById(id).get();
+
+    public LeaveVO changeStatus(Long id, Integer status) {
+        Leave leave = leaveDao.findById(id).get();
         leave.setStatus(status);
         leaveDao.save(leave);
         return new LeaveVO(leave);
     }
-    public List<ViaVO> getLeaveViaList(Long LeaveId){
-        Leave leave=leaveDao.findById(LeaveId).get();
-        Date startTime=CommonUtils.timeToDayStart(leave.getEstimateStartTime());
-        Date endTime=CommonUtils.timeToDayEnd(leave.getEstimateEndTime());
-        List<Via> vias=viaDao.getAllByCardCodeAndCardTypeAndViaTimeBetween(leave.getStudent().getCardCode(),0,startTime,endTime);
-        List<ViaVO> viaVOS=new ArrayList<>();
-        for(Via via:vias){
+
+    public List<ViaVO> getLeaveViaList(Long LeaveId) {
+        Leave leave = leaveDao.findById(LeaveId).get();
+        Date startTime = CommonUtils.timeToDayStart(leave.getEstimateStartTime());
+        Date endTime = CommonUtils.timeToDayEnd(leave.getEstimateEndTime());
+        List<Via> vias = viaDao.getAllByCardCodeAndCardTypeAndViaTimeBetween(leave.getStudent().getCardCode(), 0, startTime, endTime);
+        List<ViaVO> viaVOS = new ArrayList<>();
+        for (Via via : vias) {
             viaVOS.add(new ViaVO(via));
         }
         return viaVOS;
     }
 
-    public LeaveLimitVO saveLeaveLimit(LeaveLimitVO leaveLimitVO){
-        LeaveLimit leaveLimit=leaveLimitDao.findById(leaveLimitVO.getId()).get();
+    public LeaveLimitVO saveLeaveLimit(LeaveLimitVO leaveLimitVO) {
+        LeaveLimit leaveLimit = leaveLimitDao.findById(leaveLimitVO.getId()).get();
         leaveLimit.setLimitValue(leaveLimitVO.getLimitValue());
         leaveLimitDao.save(leaveLimit);
 
@@ -280,8 +277,8 @@ public class StudentService {
                 rsCell.setCellValue("所属学员大队为空");
                 continue;
             }
-            department=departmentDao.findFirstByNameAndParentDepartment(cellValue,department);
-            if(department==null){
+            department = departmentDao.findFirstByNameAndParentDepartment(cellValue, department);
+            if (department == null) {
                 rsCell.setCellValue("所属学员大队不存在");
                 continue;
             }
@@ -290,15 +287,15 @@ public class StudentService {
                 rsCell.setCellValue("所属学员队为空");
                 continue;
             }
-            department=departmentDao.findFirstByNameAndParentDepartment(cellValue,department);
-            if(department==null){
+            department = departmentDao.findFirstByNameAndParentDepartment(cellValue, department);
+            if (department == null) {
                 rsCell.setCellValue("所属学员队不存在");
                 continue;
             }
             student.setDepartment(department);
 
             String cellDate = row.getCell(16).getStringCellValue();
-            SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd" );
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             if (null == cellDate) {
                 rsCell.setCellValue("入学时间为空");
                 continue;
@@ -343,11 +340,47 @@ public class StudentService {
         studentDao.save(student);
     }
 
+    public static void main(String[] args) throws IOException {
+        File file = new File("/home/poshist/Downloads/1111.xls");
+        Workbook wb = new HSSFWorkbook(new FileInputStream(file));
+        Sheet sheet = wb.getSheetAt(0);
+        Row row = sheet.getRow(0);
+        Cell cell = row.getCell(0);
+        CellType cellType = cell.getCellType(); // 获取单元格类型
+        if (cellType == CellType.BLANK) {
+            System.out.println("BLANK");
+        } else if (cellType == CellType.BOOLEAN) {
+            System.out.println("BOOLEAN");
+        } else if (cellType == CellType.NUMERIC) {
+            System.out.println("NUMERIC");
+        } else if (cellType == CellType.STRING) {
+            System.out.println("STRING");
+        } else if (cellType == CellType.ERROR) {
+            System.out.println("ERROR");
+        } else if (cellType == CellType.FORMULA) {
+            System.out.println("FORMULA");
+        }
+    }
+
     private String getStringCellValue(Row row, int i) {
         if (null == row.getCell(i)) {
             return "";
         }
-        return row.getCell(i).getStringCellValue();
+        CellType cellType = row.getCell(i).getCellType();
+        if (cellType == CellType.BLANK) {
+            return "";
+        } else if (cellType == CellType.BOOLEAN) {
+            return String.valueOf(row.getCell(i).getBooleanCellValue());
+        } else if (cellType == CellType.NUMERIC) {
+            return String.valueOf(row.getCell(i).getNumericCellValue());
+        } else if (cellType == CellType.STRING) {
+            return row.getCell(i).getStringCellValue();
+        } else if (cellType == CellType.ERROR) {
+            return "";
+        } else if (cellType == CellType.FORMULA) {
+            return "";
+        }
+        return "";
     }
 
     /**
@@ -365,7 +398,7 @@ public class StudentService {
                 leaveDao.save(leave);
             }
         }
-        Integer[] status = {2,4,5};
+        Integer[] status = {2, 4, 5};
         //处理返回
         leaves = leaveDao.findAllByStatusNotInAndEstimateEndTimeLessThanEqual(status, now);
         for (Leave leave : leaves) {
@@ -394,29 +427,31 @@ public class StudentService {
             student.setInStatus(via.getViaType());
             student.setLastViaTime(via.getViaTime());
             studentDao.save(student);
-            if(via.getViaType()==0&&via.getViaResult()==0){
-                Leave leave=leaveDao.findFirstByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqualAndStudent(via.getViaTime(),via.getViaTime(),student);
-                if(null==leave){
-                    leave=leaveDao.findFirstByEstimateStartTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()),CommonUtils.timeToDayEnd(via.getViaTime()),student);
-                    if(null!=leave){
+            if (via.getViaType() == 0 && via.getViaResult() == 0) {
+                Leave leave = leaveDao.findFirstByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqualAndStudent(via.getViaTime(), via.getViaTime(), student);
+                if (null == leave) {
+                    leave = leaveDao.findFirstByEstimateStartTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
+                            student);
+                    if (null != leave) {
                         leave.setStatus(5);
 
-                        if(null==leave.getStartDate()){
+                        if (null == leave.getStartDate()) {
                             leave.setStartDate(via.getViaTime());
                         }
                         leaveDao.save(leave);
-                    }else{
-                        leave=leaveDao.findFirstByEstimateEndTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()),CommonUtils.timeToDayEnd(via.getViaTime()),student);
-                        if(null!=leave){
+                    } else {
+                        leave = leaveDao.findFirstByEstimateEndTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
+                                student);
+                        if (null != leave) {
                             leave.setStatus(5);
-                            if(null==leave.getStartDate()){
+                            if (null == leave.getStartDate()) {
                                 leave.setStartDate(via.getViaTime());
                             }
                             leaveDao.save(leave);
                         }
                     }
-                }else{
-                    if(null==leave.getStartDate()){
+                } else {
+                    if (null == leave.getStartDate()) {
                         leave.setStartDate(via.getViaTime());
                     }
 
@@ -519,7 +554,7 @@ public class StudentService {
      * @return
      */
 
-    public  Long varDepartment(Long userDepartmentId) {
+    public Long varDepartment(Long userDepartmentId) {
 //        if (Constant.DEPARTMENT_SCHOOL_ID == userDepartmentId || Constant.DEPARTMENT_SECURITY_ID == userDepartmentId) {
 //            userDepartmentId = null;
 //        }
