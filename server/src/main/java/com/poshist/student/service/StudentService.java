@@ -341,20 +341,20 @@ public class StudentService {
     }
 
     public static void main(String[] args) throws IOException {
-        File file = new File("/home/poshist/Downloads/1111.xls");
+        File file = new File("/home/poshist/Downloads/1112.xls");
         Workbook wb = new HSSFWorkbook(new FileInputStream(file));
         Sheet sheet = wb.getSheetAt(0);
-        Row row = sheet.getRow(0);
-        Cell cell = row.getCell(0);
+        Row row = sheet.getRow(7);
+        Cell cell = row.getCell(3);
         CellType cellType = cell.getCellType(); // 获取单元格类型
         if (cellType == CellType.BLANK) {
             System.out.println("BLANK");
         } else if (cellType == CellType.BOOLEAN) {
             System.out.println("BOOLEAN");
         } else if (cellType == CellType.NUMERIC) {
-            System.out.println("NUMERIC");
+            System.out.println(String.valueOf(Math.round(cell.getNumericCellValue())));
         } else if (cellType == CellType.STRING) {
-            System.out.println("STRING");
+            System.out.println(cell.getStringCellValue());
         } else if (cellType == CellType.ERROR) {
             System.out.println("ERROR");
         } else if (cellType == CellType.FORMULA) {
@@ -372,7 +372,7 @@ public class StudentService {
         } else if (cellType == CellType.BOOLEAN) {
             return String.valueOf(row.getCell(i).getBooleanCellValue());
         } else if (cellType == CellType.NUMERIC) {
-            return String.valueOf(row.getCell(i).getNumericCellValue());
+            return String.valueOf(Math.round(row.getCell(i).getNumericCellValue()));
         } else if (cellType == CellType.STRING) {
             return row.getCell(i).getStringCellValue();
         } else if (cellType == CellType.ERROR) {
