@@ -87,12 +87,6 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid-spring-boot-starter</artifactId>
-			<version>1.1.16</version>
-		</dependency>
-
 		<!-- 日志系统整理 -->
 		<!-- log4j 桥接到 slf4j -->
 		<dependency>

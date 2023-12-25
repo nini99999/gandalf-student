@@ -86,7 +86,7 @@ public class StudentService {
         Leave leave = leaveDao.findById(LeaveId).get();
         Date startTime = CommonUtils.timeToDayStart(leave.getEstimateStartTime());
         Date endTime = CommonUtils.timeToDayEnd(leave.getEstimateEndTime());
-        List<Via> vias = viaDao.getAllByCardCodeAndCardTypeAndViaTimeBetween(leave.getStudent().getCardCode(), 0, startTime, endTime);
+        List<Via> vias = viaDao.getAllByCardCodeAndCardTypeAndViaTimeBetween(leave.getStudent().getCardCode().toUpperCase(), 0, startTime, endTime);
         List<ViaVO> viaVOS = new ArrayList<>();
         for (Via via : vias) {
             viaVOS.add(new ViaVO(via));
