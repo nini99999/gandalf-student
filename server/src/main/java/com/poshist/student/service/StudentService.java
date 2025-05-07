@@ -29,6 +29,7 @@ import com.poshist.sys.repository.DictionaryDao;
 import com.poshist.sys.service.UserService;
 import com.poshist.sys.vo.DepartmentVO;
 import com.poshist.sys.vo.PicVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -54,6 +55,7 @@ import java.util.zip.ZipInputStream;
 
 @Service
 @Transactional
+@Slf4j
 public class StudentService {
 
     @Autowired
@@ -311,7 +313,8 @@ public class StudentService {
                 student.setEndTime(sdf.parse(cellDate));
             }
             student.setStatus(0);
-
+            student.setHikVisionStatus(0);
+            student.setJieShunStatus(0);
             cellValue = getStringCellValue(row, 18);
             if (StringUtils.isEmpty(cellValue)) {
                 rsCell.setCellValue("一卡通号码为空");
@@ -319,8 +322,8 @@ public class StudentService {
             } else {
                 student.setCardCode(cellValue);
             }
-
-            sendPerson(student);
+            studentDao.save(student);
+            sendJieShunPerson(student);
             rsCell.setCellValue("导入成功");
 
 
@@ -328,14 +331,17 @@ public class StudentService {
         wb.write(outputStream);
     }
 
-    private void sendPerson(Student student) throws IOException {
-
-        if (null == student.getId()) {
-            studentDao.save(student);
-            String thirdId = gateService.sendPerson(student, 0);
-            student.setThirdId(thirdId);
-        } else {
-            gateService.sendPerson(student, 1);
+    private void sendJieShunPerson(Student student) throws IOException {
+        try {
+            if (null == student.getId()) {
+                String thirdId = gateService.sendPerson(student, 0);
+                student.setThirdId(thirdId);
+            } else {
+                gateService.sendPerson(student, 1);
+            }
+            student.setJieShunStatus(1);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         studentDao.save(student);
     }
@@ -651,8 +657,8 @@ public class StudentService {
         student.setDepartment(department);
         student.setStatus(Constant.VALID);
         student.setInStatus(0);
-        sendPerson(student);
-
+        studentDao.save(student);
+        sendJieShunPerson(student);
         return new StudentVO(student);
     }
 

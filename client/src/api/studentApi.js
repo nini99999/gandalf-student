@@ -88,7 +88,7 @@ class StudentApi extends BaseApi {
     importStudentPic(picZip) {
         let form = new FormData();
         form.append('picZip', picZip);
-        return this.httpPost('student/upLoadStudentsPic', form, {}, '导入学生图片失败');
+        return this.httpPost('/student/upLoadStudentsPic', form, {}, '导入学生图片失败');
     }
 
     getDepartmentLimits() {

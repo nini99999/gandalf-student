@@ -75,6 +75,16 @@
 			<artifactId>log4jdbc</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>hikvision</groupId>
+			<artifactId>artemis-http-client</artifactId>
+			<version>1.1.13</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.8.32</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -135,7 +145,12 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.62</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
 	<properties>
 		<java.version>1.8</java.version>
