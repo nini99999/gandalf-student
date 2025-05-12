@@ -1,5 +1,6 @@
 package com.poshist.student.service;
 
+import cn.hutool.core.codec.Base64;
 import com.poshist.common.Constant;
 import com.poshist.common.RunTimeException;
 import com.poshist.common.utils.CommonUtils;
@@ -8,6 +9,7 @@ import com.poshist.common.vo.PageVO;
 import com.poshist.soa.entity.Via;
 import com.poshist.soa.repository.ViaDao;
 import com.poshist.soa.service.GateService;
+import com.poshist.soa.service.HikVisionService;
 import com.poshist.soa.vo.ViaVO;
 import com.poshist.student.entity.Applicant;
 import com.poshist.student.entity.Leave;
@@ -76,6 +78,8 @@ public class StudentService {
     private ViaDao viaDao;
     @Autowired
     private GateService gateService;
+    @Autowired
+    private HikVisionService hikVisionService;
 
     public LeaveVO changeStatus(Long id, Integer status) {
         Leave leave = leaveDao.findById(id).get();
@@ -137,9 +141,8 @@ public class StudentService {
     }
 
     public void upLoadStudentsPic(MultipartFile picZip) throws IOException {
-
         ZipInputStream zis = new ZipInputStream(picZip.getInputStream());
-        ZipEntry zipEntry = null;
+        ZipEntry zipEntry;
         File tempFile = File.createTempFile("temp", "zip");
         picZip.transferTo(tempFile);
         ZipFile zipFile = new ZipFile(tempFile);
@@ -154,6 +157,7 @@ public class StudentService {
                 InputStream is = zipFile.getInputStream(zipEntry);
                 picVO.setData(IOUtils.toByteArray(is));
                 userService.uploadPic(picVO);
+                sendHikPerson(student, Base64.encode(picVO.getData()));
             }
         }
     }
@@ -340,6 +344,15 @@ public class StudentService {
                 gateService.sendPerson(student, 1);
             }
             student.setJieShunStatus(1);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        studentDao.save(student);
+    }
+
+    private void sendHikPerson(Student student, String face) throws IOException {
+        try {
+            hikVisionService.sendPerson(student, face);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -608,7 +621,16 @@ public class StudentService {
             leave.setStatus(0);
             Student student = studentDao.findById(Long.valueOf(studentId)).get();
             leave.setStudent(student);
-            gateService.sendDoor(leave);
+            try {
+                gateService.sendDoor(leave);
+            } catch (Exception ex) {
+                log.error("发送捷顺门禁失败:{}", ex.getMessage(), ex);
+            }
+            try {
+                hikVisionService.sendDoor(leave);
+            } catch (Exception ex) {
+                log.error("发送海康门禁失败:{}", ex.getMessage(), ex);
+            }
             leaveDao.save(leave);
             applicantVO.addLeaveVO(new LeaveVO(leave));
         }
