@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 /**
@@ -29,7 +30,7 @@ import java.util.*;
 @Service
 @Slf4j
 public class HikVisionService {
-    private final ArtemisConfig config;
+    private ArtemisConfig config;
     @Value("${hikvision.baseUrl}")
     private String baseUrl;
     @Value("${hikvision.appKey}")
@@ -47,7 +48,8 @@ public class HikVisionService {
     private static final String ARTEMIS_PATH = "/artemis";
     private final String orgCode = "pEIVnpxkeK2x1du8cz3ximz3iZnkrtgX";
 
-    public HikVisionService() {
+    @PostConstruct
+    public void init() {
         config = new ArtemisConfig();
         // 代理API网关nginx服务器ip端口
         config.setHost(baseUrl);
@@ -60,6 +62,10 @@ public class HikVisionService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    public HikVisionService() {
+
     }
 
     public void event() throws Exception {
@@ -152,7 +158,7 @@ public class HikVisionService {
         if (StringUtils.isNotBlank(student.getFaceId())) {
             Map<String, String> body = new HashMap<>(2);
             body.put("faceId", student.getFaceId());
-            body.put("faceData", face);
+            body.put("faceData", "data:image/png;base64,"+face);
             String url = ARTEMIS_PATH + "/api/resource/v1/face/single/update";
             path.put("https://", url);
             String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
@@ -182,7 +188,7 @@ public class HikVisionService {
             cardInfo.setCardType(1);
             cardInfo.setPersonId(person.getPersonId());
             cardInfo.setOrgIndexCode(orgCode);
-            cardInfo.setCardNo("80" + StringUtils.leftPad(student.getId() + "", 10, '0'));
+            cardInfo.setCardNo(student.getCardCode());
             List<HikCardVO.Card> cardList = new ArrayList<>(1);
             cardList.add(cardInfo);
             card.setCardList(cardList);

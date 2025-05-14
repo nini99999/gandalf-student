@@ -45,6 +45,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import sun.misc.BASE64Encoder;
 
 import javax.persistence.criteria.*;
 import java.io.*;
@@ -142,6 +143,7 @@ public class StudentService {
 
     public void upLoadStudentsPic(MultipartFile picZip) throws IOException {
         ZipInputStream zis = new ZipInputStream(picZip.getInputStream());
+        BASE64Encoder encoder = new BASE64Encoder();
         ZipEntry zipEntry;
         File tempFile = File.createTempFile("temp", "zip");
         picZip.transferTo(tempFile);
@@ -350,7 +352,7 @@ public class StudentService {
         studentDao.save(student);
     }
 
-    private void sendHikPerson(Student student, String face) throws IOException {
+    private void sendHikPerson(Student student, String face)  {
         try {
             hikVisionService.sendPerson(student, face);
         } catch (Exception e) {
