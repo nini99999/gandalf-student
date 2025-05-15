@@ -1,8 +1,9 @@
 package com.poshist.soa.service;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.TypeReference;
-import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hikvision.artemis.sdk.ArtemisHttpUtil;
 import com.hikvision.artemis.sdk.config.ArtemisConfig;
 import com.poshist.soa.entity.Receive;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +49,7 @@ public class HikVisionService {
     private StudentService studentService;
     private static final String ARTEMIS_PATH = "/artemis";
     private final String orgCode = "pEIVnpxkeK2x1du8cz3ximz3iZnkrtgX";
+    private static final ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @PostConstruct
     public void init() {
@@ -68,6 +71,7 @@ public class HikVisionService {
 
     }
 
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void event() throws Exception {
         Map<String, String> path = new HashMap<>(1);
         Map<String, Object> body = new HashMap<>(5);
@@ -79,10 +83,10 @@ public class HikVisionService {
         body.put("eventTypes", new Integer[]{196893});
         String url = ARTEMIS_PATH + "/api/acs/v2/door/events";
         path.put("https://", url);
-        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
+        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
         log.info("event :{}", rs);
-        HikBaseVO<HikViaVO> baseVO = JSONUtil.toBean(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
-        }, true);
+        HikBaseVO<HikViaVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
+        });
         for (HikViaVO.Via viaVo : baseVO.getData().getList()) {
             if (StringUtils.startsWith(viaVo.getPersonId(), "909")) {
                 Long id = Long.valueOf(viaVo.getPersonId().substring(3));
@@ -114,14 +118,7 @@ public class HikVisionService {
     public void sendDoor(Leave leave) throws Exception {
         Map<String, String> path = new HashMap<>(1);
         Map<String, Object> body = new HashMap<>(2);
-        body.put("pageNo", 1);
-        body.put("pageSize", 500);
-        String url = ARTEMIS_PATH + "/api/resource/v2/door/search";
-        path.put("https://", url);
-        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
-        log.info("getDoor :{}", rs);
-        HikBaseVO<HikDoorVO> baseVO = JSONUtil.toBean(rs, new TypeReference<HikBaseVO<HikDoorVO>>() {
-        }, true);
+
         HikLeaveVO hikLeave = new HikLeaveVO();
         HikLeaveVO.PersonData personData = new HikLeaveVO.PersonData();
         personData.setIndexCodes(new String[]{"909" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
@@ -130,25 +127,27 @@ public class HikVisionService {
         personDataList.add(personData);
         hikLeave.setPersonDatas(personDataList);
         List<HikLeaveVO.ResourceInfo> resourceInfoList = new ArrayList<>();
-        for (HikDoorVO.Door door : baseVO.getData().getList()) {
+        String[] doors=new String[]{"52c6abdda4f840c49a1b438a8f181dd5","891e682b898f40de8d525d3f472d6659","dbe988731975499face3dcfe60b88335","4ca4b23f6e714941be6d108fff746483",
+                "ab618fa518094b0b8b8421ea7ad9384e","d0a10bb08f3b49d2847094998686969f","c0eaece27672419d87d646aec21646e3","1281843d25544e379ce6a49a244a4b8e","7963d2d68a834c9687c26df0615b3e17","289917ad5e014c8a8f262982c0dab69e","a4f13385405f48b6ac148194b2144a36","01388d3b48394f109ac33638b3d8c5ef"};
+        for (String door :doors) {
             HikLeaveVO.ResourceInfo resourceInfo = new HikLeaveVO.ResourceInfo();
-            resourceInfo.setResourceIndexCode(door.getIndexCode());
+            resourceInfo.setResourceIndexCode(door);
             resourceInfo.setResourceType("door");
             resourceInfoList.add(resourceInfo);
         }
         hikLeave.setResourceInfos(resourceInfoList);
         hikLeave.setStartTime(DateUtil.formatDate(leave.getStartDate()) + "T00:00:00+08:00");
         hikLeave.setEndTime(DateUtil.formatDate(leave.getEndDate()) + "T23:59:59+08:00");
-        url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
+        String url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
         path.put("https://", url);
-        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(hikLeave), null, null, "application/json");
+        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(hikLeave), null, null, "application/json");
         log.info("leave:{}", rs);
         url = ARTEMIS_PATH + "/api/acps/v1/authDownload/configuration/shortcut";
         path.put("https://", url);
         HikDownloadVO download = new HikDownloadVO();
         download.setTaskType(4);
         download.setResourceInfos(hikLeave.getResourceInfos());
-        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(download), null, null, "application/json");
+        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(download), null, null, "application/json");
         log.info("download:{}", rs);
 
     }
@@ -158,10 +157,10 @@ public class HikVisionService {
         if (StringUtils.isNotBlank(student.getFaceId())) {
             Map<String, String> body = new HashMap<>(2);
             body.put("faceId", student.getFaceId());
-            body.put("faceData", "data:image/png;base64,"+face);
+            body.put("faceData", "data:image/png;base64," + face);
             String url = ARTEMIS_PATH + "/api/resource/v1/face/single/update";
             path.put("https://", url);
-            String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
+            String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
             log.info("updateFace :{}", rs);
         } else {
             HikPersonVO person = new HikPersonVO();
@@ -174,27 +173,28 @@ public class HikVisionService {
             faces.add(faceData);
             person.setFaces(faces);
             person.setOrgIndexCode(orgCode);
+            person.setJobNo(person.getPersonId());
             String url = ARTEMIS_PATH + "/api/resource/v2/person/single/add";
             path.put("https://", url);
-            String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(person), null, null, "application/json");
+            String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(person), null, null, "application/json");
             log.info("addPerson :{}", rs);
-            Map rsMap = JSONUtil.toBean(rs, Map.class);
+            Map rsMap = MAPPER.readValue(rs, Map.class);
             String faceId = ((Map) rsMap.get("data")).get("faceId").toString();
             student.setFaceId(faceId);
             HikCardVO card = new HikCardVO();
             card.setStartDate("2025-01-01");
-            card.setEndDate("2037-21-01");
+            card.setEndDate("2037-12-01");
             HikCardVO.Card cardInfo = new HikCardVO.Card();
             cardInfo.setCardType(1);
             cardInfo.setPersonId(person.getPersonId());
             cardInfo.setOrgIndexCode(orgCode);
-            cardInfo.setCardNo(student.getCardCode());
+            cardInfo.setCardNo("1" + StringUtils.leftPad(student.getId() + "", 8, '0'));
             List<HikCardVO.Card> cardList = new ArrayList<>(1);
             cardList.add(cardInfo);
             card.setCardList(cardList);
             url = ARTEMIS_PATH + "/api/cis/v1/card/bindings";
             path.put("https://", url);
-            rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(card), null, null, "application/json");
+            rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(card), null, null, "application/json");
             log.info("addCard :{}", rs);
         }
 
@@ -206,9 +206,9 @@ public class HikVisionService {
         body.put("orgIndexCodes", new String[]{orgCode});
         String url = ARTEMIS_PATH + "/api/resource/v1/org/orgIndexCodes/orgInfo";
         path.put("https://", url);
-        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
+        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
         log.info("orgInfo :{}", rs);
-        Map rsMap = JSONUtil.toBean(rs, Map.class);
+        Map rsMap = MAPPER.readValue(rs, Map.class);
         if (null != ((Map) rsMap.get("data")).get("total")) {
             int total = Integer.parseInt(((Map) rsMap.get("data")).get("total").toString());
             if (total == 0) {
@@ -216,8 +216,8 @@ public class HikVisionService {
                 path.put("https://", url);
                 rs = ArtemisHttpUtil.doPostStringArtemis(config, path, null, null, null, "application/json");
                 log.info("rootOrg:{}", rs);
-                HikBaseVO<HikOrgVO> baseVO = JSONUtil.toBean(rs, new TypeReference<HikBaseVO<HikOrgVO>>() {
-                }, true);
+                HikBaseVO<HikOrgVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikOrgVO>>() {
+                });
                 String rootIndexCode = baseVO.getData().getOrgIndexCode();
                 HikOrgVO orgVO = new HikOrgVO();
                 orgVO.setOrgName("请销假组织");
@@ -228,8 +228,9 @@ public class HikVisionService {
                 orgList.add(orgVO);
                 url = ARTEMIS_PATH + "/api/resource/v1/org/batch/add";
                 path.put("https://", url);
-                rs = ArtemisHttpUtil.doPostStringArtemis(config, path, JSONUtil.toJsonStr(body), null, null, "application/json");
-                log.info("orgAdd:{}", rs);
+                log.info("orgAdd req:{}", MAPPER.writeValueAsString(orgList));
+                rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(orgList), null, null, "application/json");
+                log.info("orgAdd resp:{}", rs);
             }
         }
 

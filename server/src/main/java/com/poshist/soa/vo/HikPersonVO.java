@@ -14,6 +14,7 @@ public class HikPersonVO {
     private String personName;
     private String gender;
     private String orgIndexCode;
+    private String jobNo;
     private List<FaceData> faces;
 
     @Data
