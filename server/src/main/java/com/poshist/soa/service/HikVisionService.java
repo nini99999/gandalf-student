@@ -1,6 +1,7 @@
 package com.poshist.soa.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -94,32 +95,35 @@ public class HikVisionService {
         HikBaseVO<HikViaVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
         });
         for (HikViaVO.Via viaVo : baseVO.getData().getList()) {
-            if (StringUtils.startsWith(viaVo.getPersonId(), "909000")) {
-                Long id = Long.valueOf(viaVo.getPersonId().substring(3));
-                Optional<Student> optionalStudent = studentDao.findById(id);
-                if (optionalStudent.isPresent()) {
-                    Receive receive = new Receive();
-                    receive.setReceiveTime(new Date());
-                    receive.setStatus(1);
-                    receiveDao.save(receive);
-                    Via via = new Via();
-                    via.setStudentId(id);
-                    via.setCardCode(optionalStudent.get().getCardCode());
-                    via.setViaTime(DateUtil.parseUTC(viaVo.getReceiveTime()));
-                    via.setCardType(0);
-                    via.setGateId(viaVo.getDoorIndexCode());
-                    via.setGateInfo(viaVo.getDoorName());
-                    via.setReceive(receive);
-                    via.setStatus(1);
-                    via.setViaResult(0);
-                    via.setViaType(viaVo.getInAndOutType());
-                    studentService.studentVia(via);
-                    viaDao.save(via);
+            if (StringUtils.startsWith(viaVo.getPersonId(), "909")) {
+                if (NumberUtil.isNumber(viaVo.getPersonId().substring(3))) {
+                    Long id = Long.valueOf(viaVo.getPersonId().substring(3));
+                    Optional<Student> optionalStudent = studentDao.findById(id);
+                    if (optionalStudent.isPresent()) {
+                        Receive receive = new Receive();
+                        receive.setReceiveTime(new Date());
+                        receive.setStatus(1);
+                        receiveDao.save(receive);
+                        Via via = new Via();
+                        via.setStudentId(id);
+                        via.setCardCode(optionalStudent.get().getCardCode());
+                        via.setViaTime(DateUtil.parseUTC(viaVo.getReceiveTime()));
+                        via.setCardType(0);
+                        via.setGateId(viaVo.getDoorIndexCode());
+                        via.setGateInfo(viaVo.getDoorName());
+                        via.setReceive(receive);
+                        via.setStatus(1);
+                        via.setViaResult(0);
+                        via.setViaType(viaVo.getInAndOutType());
+                        studentService.studentVia(via);
+                        viaDao.save(via);
+                    }
                 }
             }
 
         }
     }
+
     @Async
     public void sendDoor(Leave leave) throws Exception {
         Map<String, String> path = new HashMap<>(1);
@@ -146,9 +150,9 @@ public class HikVisionService {
         log.info("leave req:{}", MAPPER.writeValueAsString(hikLeave));
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(hikLeave), null, null, "application/json");
         log.info("leave resp:{}", rs);
-        extracted(  hikLeave, 1);
+        extracted(hikLeave, 1);
         sleep(300000);
-        extracted( hikLeave, 4);
+        extracted(hikLeave, 4);
 //        url = ARTEMIS_PATH + "/api/acps/v1/authDownload/configuration/shortcut";
 //        path.put("https://", url);
 //        HikDownloadVO download = new HikDownloadVO();
@@ -159,7 +163,7 @@ public class HikVisionService {
 
     }
 
-    private void extracted( HikLeaveVO hikLeave, Integer type) throws Exception {
+    private void extracted(HikLeaveVO hikLeave, Integer type) throws Exception {
         String url;
         String rs;
         Map<String, String> path = new HashMap<>(1);
@@ -274,7 +278,7 @@ public class HikVisionService {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
-        System.out.println( (StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
+        System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
         leave.setEndDate(new Date());
