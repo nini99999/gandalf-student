@@ -1,6 +1,7 @@
 package com.poshist.soa.service;
 
 import cn.hutool.core.date.DateUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,11 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+
+import static java.lang.Thread.sleep;
 
 /**
  * @author: tank
@@ -39,6 +43,8 @@ public class HikVisionService {
     private String appKey;
     @Value("${hikvision.appSecret}")
     private String appSecret;
+    @Value("${hikvision.doors}")
+    private String[] doors;
     @Autowired
     private ViaDao viaDao;
     @Autowired
@@ -114,11 +120,10 @@ public class HikVisionService {
 
         }
     }
-
+    @Async
     public void sendDoor(Leave leave) throws Exception {
         Map<String, String> path = new HashMap<>(1);
-        Map<String, Object> body = new HashMap<>(2);
-
+        Map<String, Object> param = new HashMap<>(1);
         HikLeaveVO hikLeave = new HikLeaveVO();
         HikLeaveVO.PersonData personData = new HikLeaveVO.PersonData();
         personData.setIndexCodes(new String[]{"909" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
@@ -127,29 +132,61 @@ public class HikVisionService {
         personDataList.add(personData);
         hikLeave.setPersonDatas(personDataList);
         List<HikLeaveVO.ResourceInfo> resourceInfoList = new ArrayList<>();
-        String[] doors=new String[]{"52c6abdda4f840c49a1b438a8f181dd5","891e682b898f40de8d525d3f472d6659","dbe988731975499face3dcfe60b88335","4ca4b23f6e714941be6d108fff746483",
-                "ab618fa518094b0b8b8421ea7ad9384e","d0a10bb08f3b49d2847094998686969f","c0eaece27672419d87d646aec21646e3","1281843d25544e379ce6a49a244a4b8e","7963d2d68a834c9687c26df0615b3e17","289917ad5e014c8a8f262982c0dab69e","a4f13385405f48b6ac148194b2144a36","01388d3b48394f109ac33638b3d8c5ef"};
-        for (String door :doors) {
+        for (String door : doors) {
             HikLeaveVO.ResourceInfo resourceInfo = new HikLeaveVO.ResourceInfo();
             resourceInfo.setResourceIndexCode(door);
             resourceInfo.setResourceType("door");
             resourceInfoList.add(resourceInfo);
         }
         hikLeave.setResourceInfos(resourceInfoList);
-        hikLeave.setStartTime(DateUtil.formatDate(leave.getStartDate()) + "T00:00:00+08:00");
-        hikLeave.setEndTime(DateUtil.formatDate(leave.getEndDate()) + "T23:59:59+08:00");
+        hikLeave.setStartTime(DateUtil.formatDate(leave.getEstimateStartTime()) + "T00:00:01.000+08:00");
+        hikLeave.setEndTime(DateUtil.formatDate(leave.getEstimateEndTime()) + "T23:59:59.000+08:00");
         String url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
         path.put("https://", url);
+        log.info("leave req:{}", MAPPER.writeValueAsString(hikLeave));
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(hikLeave), null, null, "application/json");
-        log.info("leave:{}", rs);
-        url = ARTEMIS_PATH + "/api/acps/v1/authDownload/configuration/shortcut";
-        path.put("https://", url);
-        HikDownloadVO download = new HikDownloadVO();
-        download.setTaskType(4);
-        download.setResourceInfos(hikLeave.getResourceInfos());
-        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(download), null, null, "application/json");
-        log.info("download:{}", rs);
+        log.info("leave resp:{}", rs);
+        extracted(  hikLeave, 1);
+        sleep(300000);
+        extracted( hikLeave, 4);
+//        url = ARTEMIS_PATH + "/api/acps/v1/authDownload/configuration/shortcut";
+//        path.put("https://", url);
+//        HikDownloadVO download = new HikDownloadVO();
+//        download.setTaskType(4);
+//        download.setResourceInfos(hikLeave.getResourceInfos());
+//        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(download), null, null, "application/json");
+//        log.info("download:{}", rs);
 
+    }
+
+    private void extracted( HikLeaveVO hikLeave, Integer type) throws Exception {
+        String url;
+        String rs;
+        Map<String, String> path = new HashMap<>(1);
+        Map<String, Object> param = new HashMap<>(1);
+        url = ARTEMIS_PATH + "/api/acps/v1/download/configuration/task/add";
+        path.put("https://", url);
+        param.put("taskType", type);
+        log.info("task add req:{}", MAPPER.writeValueAsString(param));
+        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
+        log.info("task add resp:{}", rs);
+        url = ARTEMIS_PATH + "/api/acps/v1/download/configuration/data/add";
+        path.put("https://", url);
+        param = new HashMap<>(2);
+        Map rsMap = MAPPER.readValue(rs, Map.class);
+        String taskId = ((Map) rsMap.get("data")).get("taskId").toString();
+        param.put("taskId", taskId);
+        param.put("resourceInfos", hikLeave.getResourceInfos());
+        log.info("data add req:{}", MAPPER.writeValueAsString(param));
+        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
+        log.info("data add resp:{}", rs);
+        url = ARTEMIS_PATH + "/api/acps/v1/authDownload/task/start";
+        path.put("https://", url);
+        param = new HashMap<>(1);
+        param.put("taskId", taskId);
+        log.info("task start req:{}", MAPPER.writeValueAsString(param));
+        rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
+        log.info("task start resp:{}", rs);
     }
 
     public void sendPerson(Student student, String face) throws Exception {
@@ -236,8 +273,35 @@ public class HikVisionService {
 
     }
 
-    public static void main(String[] args) {
-        System.out.println(DateUtil.parseUTC("2019-11-16T15:44:33+08:00"));
+    public static void main(String[] args) throws JsonProcessingException {
+        Leave leave = new Leave();
+        leave.setStartDate(new Date());
+        leave.setEndDate(new Date());
+        Student student = new Student();
+        student.setId(4715L);
+        leave.setStudent(student);
+        HikLeaveVO hikLeave = new HikLeaveVO();
+        HikLeaveVO.PersonData personData = new HikLeaveVO.PersonData();
+        personData.setIndexCodes(new String[]{"909" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
+        personData.setPersonDataType("person");
+        List<HikLeaveVO.PersonData> personDataList = new ArrayList<>();
+        personDataList.add(personData);
+        hikLeave.setPersonDatas(personDataList);
+        List<HikLeaveVO.ResourceInfo> resourceInfoList = new ArrayList<>();
+        String[] doors = new String[]{"52c6abdda4f840c49a1b438a8f181dd5", "891e682b898f40de8d525d3f472d6659", "dbe988731975499face3dcfe60b88335",
+                "4ca4b23f6e714941be6d108fff746483",
+                "ab618fa518094b0b8b8421ea7ad9384e", "d0a10bb08f3b49d2847094998686969f", "c0eaece27672419d87d646aec21646e3", "1281843d25544e379ce6a49a244a4b8e",
+                "7963d2d68a834c9687c26df0615b3e17", "289917ad5e014c8a8f262982c0dab69e", "a4f13385405f48b6ac148194b2144a36", "01388d3b48394f109ac33638b3d8c5ef"};
+        for (String door : doors) {
+            HikLeaveVO.ResourceInfo resourceInfo = new HikLeaveVO.ResourceInfo();
+            resourceInfo.setResourceIndexCode(door);
+            resourceInfo.setResourceType("door");
+            resourceInfoList.add(resourceInfo);
+        }
+        hikLeave.setResourceInfos(resourceInfoList);
+        hikLeave.setStartTime(DateUtil.formatDate(leave.getEstimateStartTime()) + "T00:00:01.000+08:00");
+        hikLeave.setEndTime(DateUtil.formatDate(leave.getEstimateEndTime()) + "T23:59:59.000+08:00");
+        System.out.println(MAPPER.writeValueAsString(hikLeave));
     }
 
 }
