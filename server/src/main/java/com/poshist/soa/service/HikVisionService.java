@@ -94,7 +94,7 @@ public class HikVisionService {
         HikBaseVO<HikViaVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
         });
         for (HikViaVO.Via viaVo : baseVO.getData().getList()) {
-            if (StringUtils.startsWith(viaVo.getPersonId(), "909")) {
+            if (StringUtils.startsWith(viaVo.getPersonId(), "909000")) {
                 Long id = Long.valueOf(viaVo.getPersonId().substring(3));
                 Optional<Student> optionalStudent = studentDao.findById(id);
                 if (optionalStudent.isPresent()) {
@@ -274,6 +274,7 @@ public class HikVisionService {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
+        System.out.println( (StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
         leave.setEndDate(new Date());
