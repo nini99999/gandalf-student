@@ -181,6 +181,18 @@ public class StudentController {
         baseVO.setData(studentService.saveStudent(studentVO));
         return baseVO;
     }
+    /**
+     * 删除学员
+     *
+     * @param studentVO
+     * @return
+     */
+    @RequestMapping("/deleteStudent")
+    public BaseVO deleteStudent(@RequestBody StudentVO studentVO) throws IOException {
+        BaseVO baseVO = new BaseVO();
+        baseVO.setData(studentService.saveStudent(studentVO));
+        return baseVO;
+    }
 
     /**
      * 获取学员信息

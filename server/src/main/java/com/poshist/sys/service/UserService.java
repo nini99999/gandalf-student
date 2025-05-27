@@ -1,11 +1,17 @@
 package com.poshist.sys.service;
 
+import cn.hutool.core.codec.Base64;
 import com.poshist.common.Constant;
 import com.poshist.common.utils.CommonUtils;
+import com.poshist.soa.service.HikVisionService;
+import com.poshist.student.entity.Student;
+import com.poshist.student.repository.StudentDao;
 import com.poshist.sys.entity.*;
 import com.poshist.sys.repository.*;
 import com.poshist.sys.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +29,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class UserService {
     @Autowired
     private UserDao userDao;
@@ -38,7 +45,11 @@ public class UserService {
     private PicDao picDao;
     @Autowired
     private UserRoleDao userRoleDao;
-
+    @Autowired
+    private StudentDao studentDao;
+    @Autowired
+    @Lazy
+    private HikVisionService hikVisionService;
     public void initPassword(Long id){
         User user=userDao.findById(id).get();
         BCryptPasswordEncoder encode = new BCryptPasswordEncoder();
@@ -343,6 +354,16 @@ public class UserService {
             pic.setData(picVO.getData());
         }
         picDao.save(pic);
+        Student student = studentDao.findById(picVO.getObjectId()).get();
+        if(null!=student){
+            try {
+                hikVisionService.sendPerson(student,Base64.encode(picVO.getData()));
+                studentDao.save(student);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
+        }
         return new PicVO(pic);
     }
 

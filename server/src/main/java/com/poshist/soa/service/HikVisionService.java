@@ -143,8 +143,8 @@ public class HikVisionService {
             resourceInfoList.add(resourceInfo);
         }
         hikLeave.setResourceInfos(resourceInfoList);
-        hikLeave.setStartTime(DateUtil.formatDate(leave.getEstimateStartTime()) + "T00:00:01.000+08:00");
-        hikLeave.setEndTime(DateUtil.formatDate(leave.getEstimateEndTime()) + "T23:59:59.000+08:00");
+        hikLeave.setStartTime(DateUtil.format(leave.getEstimateStartTime(), "yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
+        hikLeave.setEndTime(DateUtil.format(leave.getEstimateEndTime(), "yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
         String url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
         path.put("https://", url);
         log.info("leave req:{}", MAPPER.writeValueAsString(hikLeave));
@@ -278,6 +278,7 @@ public class HikVisionService {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
+        System.out.println(DateUtil.format(new Date() ,"yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
         System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
