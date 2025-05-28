@@ -13,7 +13,7 @@
                 <div class="content">
                     <div class="row" v-for="(item,i) in data" :key="i">
                         <span>{{item.departmentName}}</span>
-                        <span>{{item.limitValue}}</span>
+                        <span>{{item.limitValue}}%</span>
                         <span><a class="link" @click="onEdit(item)">编辑</a></span>
                     </div>
                 </div>

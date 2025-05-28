@@ -46,7 +46,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import javax.persistence.criteria.*;
 import java.io.*;
 import java.text.ParseException;
@@ -328,10 +327,8 @@ public class StudentService {
                 student.setCardCode(cellValue);
             }
             studentDao.save(student);
-            sendJieShunPerson(student);
+           // sendJieShunPerson(student);
             rsCell.setCellValue("导入成功");
-
-
         }
         wb.write(outputStream);
     }
@@ -351,7 +348,7 @@ public class StudentService {
         studentDao.save(student);
     }
 
-    private void sendHikPerson(Student student, String face)  {
+    private void sendHikPerson(Student student, String face) {
         try {
             hikVisionService.sendPerson(student, face);
         } catch (Exception e) {
@@ -681,13 +678,24 @@ public class StudentService {
         student.setStatus(Constant.VALID);
         student.setInStatus(0);
         studentDao.save(student);
-        sendJieShunPerson(student);
+       // sendJieShunPerson(student);
         return new StudentVO(student);
     }
 
     public StudentVO getStudentById(Long id) {
         Student student = studentDao.findById(id).get();
         return new StudentVO(student);
+    }
+
+    public void deleteStudent(Long id) {
+        Student student = studentDao.findById(id).get();
+        student.setStatus(Constant.INVALID);
+        studentDao.save(student);
+        try {
+            hikVisionService.deletePerson(id);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     public PageVO getStudentList(StudentVO studentVO, PageVO pageVO, Long userDepartmentId) {
@@ -701,6 +709,7 @@ public class StudentService {
                 Join<Student, Department> join = root.join("department", JoinType.LEFT);
                 Path<Long> departmentId = join.get("id");
                 findInDepartment(list, join, finalUserDepartmentId);
+                list.add(cb.equal(root.get("status"), 0));
                 if (null != studentVO.getDepartmentId()) {
                     list.add(cb.equal(departmentId, studentVO.getDepartmentId()));
                 }

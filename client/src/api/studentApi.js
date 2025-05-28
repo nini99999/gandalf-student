@@ -29,7 +29,12 @@ class StudentApi extends BaseApi {
             genderId
         }, {}, '新增学员失败')
     }
-
+    delete({id, ids}) {
+        return this.httpPost('/student/deleteStudent', {
+            id,
+            ids,
+        }, {}, '删除学员失败')
+    }
     update({id, name, code, nativePlace, identityCode, cardCode, startTime, endTime, typeId, departmentId, genderId}) {
         return this.httpPost('/student/updateStudent', {
             id,

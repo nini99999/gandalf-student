@@ -21,25 +21,29 @@
                     <input class="input" v-model="search1" placeholder="请输入学籍号">
                     <input class="input" v-model="name" placeholder="请输入姓名">
                     <a class="btn normal ok2" @click="onSearch">搜索</a>
+                    <a class="btn normal ok2" @click="batchDelete">批量删除</a>
                 </panel-search>
                 <ctable :total="dataCount" :value="pageCount" :size="pageSize" :ready="ready" @input="loadPage">
                     <div class="head row">
-                        <span class="custom tiny">编号</span>
+                        <span class="custom tiny"><input type="checkbox" @click="allCheck()"  v-model="allChecked" >编号</span>
                         <span>学籍号</span>
                         <span>姓名</span>
                         <span>所属班级</span>
                         <span>入学年份</span>
-                        <span class="custom tiny">操作</span>
+                        <span>是否同步海康</span>
+                        <span>操作</span>
                     </div>
                     <div class="content">
                         <div class="row" v-for="(item,i) in data" :key="i">
-                            <span class="custom tiny">{{item.id}}</span>
+                            <span class="custom tiny">  <input type="checkbox"  :value="item.id" v-model="ids">{{item.id}}</span>
                             <span>{{item.code}}</span>
                             <span>{{item.name}}</span>
                             <span>{{item.departmentName}}</span>
                             <span>{{item.startTime|date}}</span>
-                            <span class="custom tiny">
+                            <span>{{item.faceId== "undefined" ||item.faceId==null?'否':'是'}}</span>
+                            <span >
                                 <a @click="onEdit(item.id)">{{permissionStudentEdit?'编辑':'查看'}}</a>
+                                <a @click="onDelete(item.id)"> 删除</a>                               
                             </span>
                         </div>
                     </div>
@@ -57,16 +61,19 @@
     import combobox from '../../../component/combobox'
     import studentController from '../../../../controller/student'
     import personController from '../../../../controller/person'
-
+  import checkbox from '../../../component/checkbox'
     export default {
-        components: {panel, panelTitle, panelSearch, ctable, combobox},
+
+        components: {panel, panelTitle, panelSearch, ctable, combobox,checkbox},
         props: {
             user: {}
         },
         data() {
             return {
                 search1: '',
+                allChecked:false,
                 name: '',
+                ids:[],
                 departmentId: '',
                 department: [{name: '全部', id: 0}],
                 data: [],
@@ -92,6 +99,29 @@
             this.loadPage();
         },
         methods: {
+            allCheck(){
+
+                if(!this.allChecked) {
+                    this.ids = [];
+                this.data.forEach( (item) => {
+                    this.ids.push(item.id);
+                });
+					} else {
+                        this.ids = [];
+					}
+
+            },
+            batchDelete(){
+                this.$confirm('确认要批量删除吗？')
+                .then(async() => {
+            let params = {ids:this.ids};
+            await  studentController.delete(params);
+                this.$$ui.showSuccess('删除成功');
+                this.loadPage();
+        })
+        .catch(() => {
+        })
+            },
             async loadPage(pageCount = 0) {
                 let params = {pageCount, pageSize: this.pageSize};
                 if (this.departmentId > 0) {
@@ -117,12 +147,26 @@
                     }
                 })
             },
+        onDelete(id) {
+                this.$confirm('确认要删除吗？')
+                .then(async() => {
+            let params = {id:id};
+            await  studentController.delete(params);
+                this.$$ui.showSuccess('删除成功');
+                this.loadPage();
+        })
+        .catch(() => {
+        })
+                
+               
+            },
             async onImport(e) {
                 let file = e.target.files[0];
                 if (file) {
                     await studentController.importStudents(file);
                     this.$$ui.showSuccess('导入成功')
                 }
+                this.loadPage()
             },
             async onImportPic(e) {
                 let file = e.target.files[0];
@@ -130,6 +174,7 @@
                     await studentController.importStudentPic(file);
                     this.$$ui.showSuccess('导入成功')
                 }
+                this.loadPage()
             }
         }
     }

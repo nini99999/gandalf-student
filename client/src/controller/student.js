@@ -28,6 +28,9 @@ export default {
     add(params) {
         return studentApi.add(params)
     },
+    delete(params) {
+        return studentApi.delete(params)
+    },
     update(params) {
         return studentApi.update(params)
     },

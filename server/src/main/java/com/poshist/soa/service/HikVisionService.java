@@ -143,8 +143,8 @@ public class HikVisionService {
             resourceInfoList.add(resourceInfo);
         }
         hikLeave.setResourceInfos(resourceInfoList);
-        hikLeave.setStartTime(DateUtil.format(leave.getEstimateStartTime(), "yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
-        hikLeave.setEndTime(DateUtil.format(leave.getEstimateEndTime(), "yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
+        hikLeave.setStartTime(DateUtil.format(leave.getEstimateStartTime(), "yyyy-MM-dd'T'HH:mm:ss") + ".000+08:00");
+        hikLeave.setEndTime(DateUtil.format(leave.getEstimateEndTime(), "yyyy-MM-dd'T'HH:mm:ss") + ".000+08:00");
         String url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
         path.put("https://", url);
         log.info("leave req:{}", MAPPER.writeValueAsString(hikLeave));
@@ -192,7 +192,18 @@ public class HikVisionService {
         rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
         log.info("task start resp:{}", rs);
     }
-
+    @Async
+    public void deletePerson(Long id) throws Exception {
+        Map<String, String> path = new HashMap<>(1);
+        Map<String, Object> param = new HashMap<>(1);
+        String[] personIds = new String[]{"909" + StringUtils.leftPad(id + "", 10, '0')};
+        param.put("personIds", personIds);
+        String url = ARTEMIS_PATH + "/api/resource/v1/person/batch/delete";
+        path.put("https://", url);
+        String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
+        log.info("deletePerson :{}", rs);
+    }
+    @Async
     public void sendPerson(Student student, String face) throws Exception {
         Map<String, String> path = new HashMap<>(1);
         if (StringUtils.isNotBlank(student.getFaceId())) {
@@ -278,7 +289,7 @@ public class HikVisionService {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
-        System.out.println(DateUtil.format(new Date() ,"yyyy-MM-dd'T'HH:mm:ss")+".000+08:00");
+        System.out.println(DateUtil.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss") + ".000+08:00");
         System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
