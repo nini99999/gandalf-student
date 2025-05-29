@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class HikVisionService {
     @Autowired
     private StudentDao studentDao;
     @Autowired
+    @Lazy
     private StudentService studentService;
     private static final String ARTEMIS_PATH = "/artemis";
     private final String orgCode = "pEIVnpxkeK2x1du8cz3ximz3iZnkrtgX";
