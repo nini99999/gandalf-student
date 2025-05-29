@@ -633,25 +633,23 @@ public class StudentService {
             applicantVO.addLeaveVO(new LeaveVO(leave));
         }
 
-        Department department = user.getDepartment();
-        if (department.getCode().length() != 6) {
-            department = departmentDao.findFirstByCode(department.getCode().substring(0, 6));
-        }
-        LeaveLimitVO leaveLimitVO = getLeaveLimit(department.getId());
-        Date startTime = new Date();
-        startTime.setTime(applicant.getStartTime().getTime());
-        Date endTime = new Date();
-        endTime.setTime(applicant.getEndTime().getTime());
-
-        List<String> datas = CommonUtils.splitData(startTime, endTime);
-        for (String data : datas) {
-            Integer leaveCount = leaveDao.countDepartmentCodeAndDate(department.getCode(), data);
-            Integer studentCount = studentDao.countDepartmentCode(department.getCode());
-            if (leaveCount / studentCount * 100 > leaveLimitVO.getLimitValue()) {
-                throw new RunTimeException("0001");
-            }
-        }
-
+//        Department department = user.getDepartment();
+//        if (department.getCode().length() != 6) {
+//            department = departmentDao.findFirstByCode(department.getCode().substring(0, 6));
+//        }
+//        LeaveLimitVO leaveLimitVO = getLeaveLimit(department.getId());
+//        Date startTime = new Date();
+//        startTime.setTime(applicant.getStartTime().getTime());
+//        Date endTime = new Date();
+//        endTime.setTime(applicant.getEndTime().getTime());
+//        List<String> datas = CommonUtils.splitData(startTime, endTime);
+//        for (String data : datas) {
+//            Integer leaveCount = leaveDao.countDepartmentCodeAndDate(department.getCode(), data);
+//            Integer studentCount = studentDao.countDepartmentCode(department.getCode());
+//            if (leaveCount / studentCount * 100 > leaveLimitVO.getLimitValue()) {
+//                throw new RunTimeException("0001");
+//            }
+//        }
         return applicantVO;
     }
 

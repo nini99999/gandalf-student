@@ -203,7 +203,7 @@ public class HikVisionService {
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
         log.info("deletePerson :{}", rs);
     }
-    @Async
+
     public void sendPerson(Student student, String face) throws Exception {
         Map<String, String> path = new HashMap<>(1);
         if (StringUtils.isNotBlank(student.getFaceId())) {
