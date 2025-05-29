@@ -28,6 +28,7 @@ public class Student extends AbstractEntity {
     private Date startTime;
     private Date endTime;
     private Integer status;
+    //0校外 1在校
     private Integer inStatus;
     private Date lastViaTime;
     private String mobile;

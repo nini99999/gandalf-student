@@ -14,6 +14,7 @@ import com.poshist.sys.entity.User;
 import com.poshist.sys.repository.DepartmentDao;
 import com.poshist.sys.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +38,10 @@ public class BIService {
     @Autowired
     private DepartmentDao departmentDao;
     @Autowired
+    @Lazy
     private UserService userService;
     @Autowired
+    @Lazy
     private StudentService studentService;
 
     /**

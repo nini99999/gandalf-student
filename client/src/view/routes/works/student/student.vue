@@ -30,7 +30,7 @@
                         <span>姓名</span>
                         <span>所属班级</span>
                         <span>入学年份</span>
-                        <span>是否同步海康</span>
+                        <span>是否同步成功</span>
                         <span>操作</span>
                     </div>
                     <div class="content">
@@ -40,7 +40,7 @@
                             <span>{{item.name}}</span>
                             <span>{{item.departmentName}}</span>
                             <span>{{item.startTime|date}}</span>
-                            <span>{{item.faceId== "undefined" ||item.faceId==null?'否':'是'}}</span>
+                            <span>{{item.faceId== "undefined" ||item.faceId==null?'未成功':'成功'}}</span>
                             <span >
                                 <a @click="onEdit(item.id)">{{permissionStudentEdit?'编辑':'查看'}}</a>
                                 <a @click="onDelete(item.id)"> 删除</a>                               

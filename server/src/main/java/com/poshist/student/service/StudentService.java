@@ -37,11 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,6 +79,7 @@ public class StudentService {
     @Autowired
     private GateService gateService;
     @Autowired
+    @Lazy
     private HikVisionService hikVisionService;
 
     public LeaveVO changeStatus(Long id, Integer status) {
@@ -166,16 +167,16 @@ public class StudentService {
         Workbook wb = ExcelUtils.getWorkBook(studentFile);
         Sheet sheet = wb.getSheetAt(0);
         int rowCount = sheet.getPhysicalNumberOfRows();
-        Dictionary d11 = dictionaryDao.findById(11l).get();
-        Dictionary d12 = dictionaryDao.findById(12l).get();
-        Dictionary d20 = dictionaryDao.findById(20l).get();
-        Dictionary d21 = dictionaryDao.findById(21l).get();
-        Dictionary d22 = dictionaryDao.findById(22l).get();
-        Dictionary d23 = dictionaryDao.findById(23l).get();
-        Dictionary d24 = dictionaryDao.findById(24l).get();
-        Dictionary d25 = dictionaryDao.findById(25l).get();
-        Dictionary d26 = dictionaryDao.findById(26l).get();
-        Dictionary d27 = dictionaryDao.findById(27l).get();
+        Dictionary d11 = dictionaryDao.findById(11L).get();
+        Dictionary d12 = dictionaryDao.findById(12L).get();
+        Dictionary d20 = dictionaryDao.findById(20L).get();
+        Dictionary d21 = dictionaryDao.findById(21L).get();
+        Dictionary d22 = dictionaryDao.findById(22L).get();
+        Dictionary d23 = dictionaryDao.findById(23L).get();
+        Dictionary d24 = dictionaryDao.findById(24L).get();
+        Dictionary d25 = dictionaryDao.findById(25L).get();
+        Dictionary d26 = dictionaryDao.findById(26L).get();
+        Dictionary d27 = dictionaryDao.findById(27L).get();
         Map<String, Department> departmentMap = new HashMap<>();
         for (int i = 1; i < rowCount; i++) {
             Row row = sheet.getRow(i);
@@ -326,8 +327,9 @@ public class StudentService {
             } else {
                 student.setCardCode(cellValue);
             }
+            student.setInStatus(1);
             studentDao.save(student);
-           // sendJieShunPerson(student);
+            // sendJieShunPerson(student);
             rsCell.setCellValue("导入成功");
         }
         wb.write(outputStream);
@@ -403,28 +405,38 @@ public class StudentService {
     /**
      * 处理请假状态
      */
-    @Scheduled(cron = "0 0,5,10,15,20,25,30,35,40,45,50,55 * * * ?")
+    //  @Scheduled(cron = "0 0/5 * * * ?")
     public void timerProcessLeave() {
         //处理外出
         Date now = new Date();
-        List<Leave> leaves = leaveDao.findAllByStatusAndEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqual(0, now, now);
+        //请假有效期
+        List<Leave> leaves = leaveDao.findAllByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqual(now, now);
         for (Leave leave : leaves) {
             if (0 == leave.getStudent().getInStatus()) {
                 leave.setStatus(1);
                 leave.setStartDate(leave.getStudent().getLastViaTime());
                 leaveDao.save(leave);
+            } else {
+                if (0 != leave.getStatus()) {
+                    leave.setStatus(2);
+                    leaveDao.save(leave);
+                }
             }
         }
-        Integer[] status = {2, 4, 5};
-        //处理返回
+        //超期
+        Integer[] status = {1, 3};
         leaves = leaveDao.findAllByStatusNotInAndEstimateEndTimeLessThanEqual(status, now);
         for (Leave leave : leaves) {
+            //未归
             if (0 == leave.getStudent().getInStatus()) {
                 leave.setStatus(3);
-            } else {
+            }
+            //以归
+            else {
                 if (3 == leave.getStatus()) {
                     leave.setStatus(4);
-                } else {
+                }
+                if (leave.getEstimateEndTime().after(leave.getStudent().getLastViaTime())) {
                     leave.setStatus(2);
                 }
                 leave.setEndDate(leave.getStudent().getLastViaTime());
@@ -444,38 +456,38 @@ public class StudentService {
             student.setInStatus(via.getViaType());
             student.setLastViaTime(via.getViaTime());
             studentDao.save(student);
-            if (via.getViaType() == 0 && via.getViaResult() == 0) {
-                Leave leave = leaveDao.findFirstByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqualAndStudent(via.getViaTime(), via.getViaTime(), student);
-                if (null == leave) {
-                    leave = leaveDao.findFirstByEstimateStartTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
-                            student);
-                    if (null != leave) {
-                        leave.setStatus(5);
-
-                        if (null == leave.getStartDate()) {
-                            leave.setStartDate(via.getViaTime());
-                        }
-                        leaveDao.save(leave);
-                    } else {
-                        leave = leaveDao.findFirstByEstimateEndTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
-                                student);
-                        if (null != leave) {
-                            leave.setStatus(5);
-                            if (null == leave.getStartDate()) {
-                                leave.setStartDate(via.getViaTime());
-                            }
-                            leaveDao.save(leave);
-                        }
-                    }
-                } else {
-                    if (null == leave.getStartDate()) {
-                        leave.setStartDate(via.getViaTime());
-                    }
-
-                    leaveDao.save(leave);
-                }
-
-            }
+//            if (via.getViaType() == 0 && via.getViaResult() == 0) {
+//                Leave leave = leaveDao.findFirstByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqualAndStudent(via.getViaTime(), via.getViaTime(), student);
+//                if (null == leave) {
+//                    leave = leaveDao.findFirstByEstimateStartTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
+//                            student);
+//                    if (null != leave) {
+//                        leave.setStatus(5);
+//
+//                        if (null == leave.getStartDate()) {
+//                            leave.setStartDate(via.getViaTime());
+//                        }
+//                        leaveDao.save(leave);
+//                    } else {
+//                        leave = leaveDao.findFirstByEstimateEndTimeBetweenAndStudent(CommonUtils.timeToDayStart(via.getViaTime()), CommonUtils.timeToDayEnd(via.getViaTime()),
+//                                student);
+//                        if (null != leave) {
+//                            leave.setStatus(5);
+//                            if (null == leave.getStartDate()) {
+//                                leave.setStartDate(via.getViaTime());
+//                            }
+//                            leaveDao.save(leave);
+//                        }
+//                    }
+//                } else {
+//                    if (null == leave.getStartDate()) {
+//                        leave.setStartDate(via.getViaTime());
+//                    }
+//
+//                    leaveDao.save(leave);
+//                }
+//
+//            }
 
         }
 
@@ -674,9 +686,11 @@ public class StudentService {
         Department department = departmentDao.findById(studentVO.getDepartmentId()).get();
         student.setDepartment(department);
         student.setStatus(Constant.VALID);
-        student.setInStatus(0);
+        if (null == student.getInStatus()) {
+            student.setInStatus(1);
+        }
         studentDao.save(student);
-       // sendJieShunPerson(student);
+        // sendJieShunPerson(student);
         return new StudentVO(student);
     }
 

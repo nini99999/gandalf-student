@@ -78,15 +78,15 @@ public class HikVisionService {
 
     }
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 0/5 * * * ?")
     public void event() throws Exception {
         Map<String, String> path = new HashMap<>(1);
         Map<String, Object> body = new HashMap<>(5);
         body.put("pageNo", 1);
         body.put("pageSize", 1000);
         Date date = new Date();
-        body.put("startTime", DateUtil.format(DateUtil.offsetMinute(date, -10), "yyyy-MM-dd'T'HH:mm:ss") + "+08:00");
-        body.put("endTime", DateUtil.format(date, "yyyy-MM-dd'T'HH:mm:ss") + "+08:00");
+        body.put("startTime", DateUtil.format(DateUtil.offsetMinute(date, -5), "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
+        body.put("endTime", DateUtil.format(date, "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
         body.put("eventTypes", new Integer[]{196893});
         String url = ARTEMIS_PATH + "/api/acs/v2/door/events";
         path.put("https://", url);
@@ -122,6 +122,7 @@ public class HikVisionService {
             }
 
         }
+        studentService.timerProcessLeave();
     }
 
     @Async
@@ -289,7 +290,7 @@ public class HikVisionService {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
-        System.out.println(DateUtil.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss") + ".000+08:00");
+        System.out.println(DateUtil.format(new Date(), "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
         System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
