@@ -436,8 +436,10 @@ public class StudentService {
                 if (3 == leave.getStatus()) {
                     leave.setStatus(4);
                 }
-                if (leave.getEstimateEndTime().after(leave.getStudent().getLastViaTime())) {
-                    leave.setStatus(2);
+                if (leave.getStudent().getLastViaTime() != null) {
+                    if (leave.getEstimateEndTime().after(leave.getStudent().getLastViaTime())) {
+                        leave.setStatus(2);
+                    }
                 }
                 leave.setEndDate(leave.getStudent().getLastViaTime());
             }
