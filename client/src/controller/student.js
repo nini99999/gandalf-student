@@ -31,6 +31,9 @@ export default {
     delete(params) {
         return studentApi.delete(params)
     },
+    deleteLevel(params) {
+        return studentApi.deleteLevel(params)
+    },
     update(params) {
         return studentApi.update(params)
     },

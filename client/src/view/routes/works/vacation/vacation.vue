@@ -37,6 +37,7 @@
                         <span>
                             <a @click="onEdit(item)">{{readonly?'查看':'编辑'}}</a>
                             <a @click="onRecord(item)">出入记录</a>
+                            <a @click="onDelete(item.id)"> 删除</a>    
                         </span>
                     </div>
                 </div>
@@ -169,6 +170,17 @@
                         id: item.id
                     }
                 })
+            },
+        onDelete(id) {
+                this.$confirm('确认要删除吗？')
+                .then(async() => {
+            let params = {id:id};
+            await  studentController.deleteLevel(params);
+                this.$$ui.showSuccess('删除成功');
+                this.loadPage();
+        })      .catch(() => {
+        })
+               
             },
             async onRecord(item) {
                 this.records = await studentController.getLeaveViaList(item.id);

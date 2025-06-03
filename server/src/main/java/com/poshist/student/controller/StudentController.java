@@ -168,15 +168,24 @@ public class StudentController {
      * 删除学员
      */
     @RequestMapping("/deleteStudent")
-    public BaseVO addStudent(@RequestBody IdVO idVO) throws IOException {
-            if (null != idVO.getId()) {
-                studentService.deleteStudent(idVO.getId());
+    public BaseVO deleteStudent(@RequestBody IdVO idVO) {
+        if (null != idVO.getId()) {
+            studentService.deleteStudent(idVO.getId());
+        }
+        if (null != idVO.getIds()) {
+            for (Long id : idVO.getIds()) {
+                studentService.deleteStudent(id);
             }
-            if (null != idVO.getIds()) {
-                for (Long id : idVO.getIds()) {
-                    studentService.deleteStudent(id);
-                }
-            }
+        }
+        return new BaseVO();
+    }
+
+    /**
+     * 删除请销假
+     */
+    @RequestMapping("/deleteLeve")
+    public BaseVO deleteLeve(@RequestBody IdVO idVO) {
+        studentService.deleteLeave(idVO.getId());
         return new BaseVO();
     }
 

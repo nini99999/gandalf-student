@@ -1,6 +1,7 @@
 package com.poshist.student.service;
 
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.date.DateUtil;
 import com.poshist.common.Constant;
 import com.poshist.common.RunTimeException;
 import com.poshist.common.utils.CommonUtils;
@@ -549,6 +550,7 @@ public class StudentService {
                 Join<Leave, Student> studentJoin = root.join("student", JoinType.LEFT);
                 Join<Student, Department> join = studentJoin.join("department", JoinType.LEFT);
                 findInDepartment(list, join, finalUserDepartmentId);
+                list.add(cb.equal(root.get("dataStatus"), 0));
                 if (null != leaveVO.getStatus()) {
                     list.add(cb.equal(root.get("status"), leaveVO.getStatus()));
                 }
@@ -610,6 +612,19 @@ public class StudentService {
         }
     }
 
+    public void deleteLeave(Long id) {
+        Leave leave = leaveDao.findById(id).get();
+        leave.setDataStatus(1);
+        leaveDao.save(leave);
+        try {
+            Date now = new Date();
+            leave.setEstimateStartTime(DateUtil.offsetMinute(now, -10));
+            leave.setEstimateEndTime(now);
+            hikVisionService.sendDoor(leave);
+        } catch (Exception ex) {
+            log.error("发送海康门禁失败:{}", ex.getMessage(), ex);
+        }
+    }
 
     /**
      * 创建请假申请
@@ -631,13 +646,9 @@ public class StudentService {
             leave.setEstimateEndTime(applicant.getEndTime());
             leave.setApplicant(applicant);
             leave.setStatus(0);
+            leave.setDataStatus(0);
             Student student = studentDao.findById(Long.valueOf(studentId)).get();
             leave.setStudent(student);
-            try {
-                gateService.sendDoor(leave);
-            } catch (Exception ex) {
-                log.error("发送捷顺门禁失败:{}", ex.getMessage(), ex);
-            }
             try {
                 hikVisionService.sendDoor(leave);
             } catch (Exception ex) {
