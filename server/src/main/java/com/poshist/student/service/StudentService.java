@@ -151,7 +151,7 @@ public class StudentService {
         while ((zipEntry = zis.getNextEntry()) != null) {
             String name = zipEntry.getName();
             name = name.substring(0, name.indexOf("."));
-            Student student = studentDao.findFirstByCode(name);
+            Student student = studentDao.findFirstByCodeAndStatus(name,0);
             if (null != student) {
                 PicVO picVO = new PicVO();
                 picVO.setObjectId(student.getId());
@@ -192,7 +192,7 @@ public class StudentService {
             }
             //判断学籍号或证件号是否存在
             if (null != row.getCell(3) && StringUtils.isNotEmpty(getStringCellValue(row, 3))) {
-                if (null != studentDao.findFirstByCode(getStringCellValue(row, 3))) {
+                if (null != studentDao.findFirstByCodeAndStatus(getStringCellValue(row, 3),0)) {
                     rsCell.setCellValue("学员证号已存在");
                     continue;
                 }

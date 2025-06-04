@@ -10,7 +10,7 @@ public interface StudentDao extends CrudRepository<Student, Long>, JpaSpecificat
      Integer countAllByStatus(Integer status);
      Integer countAllByInStatus(Integer inStatus);
      Student findFirstByIdentityCode(String IdenityCode);
-     Student findFirstByCode(String code);
+     Student findFirstByCodeAndStatus(String code,Integer status);
      @Query(nativeQuery = true, value = "select count(t.id) from t_st_student_info t  left join t_sys_department_info d on t.department_id=d.id  where d.code like CONCAT(?1,'%') and t.status=0")
      Integer countDepartmentCode(String code);
 

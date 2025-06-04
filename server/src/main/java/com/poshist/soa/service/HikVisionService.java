@@ -133,7 +133,7 @@ public class HikVisionService {
         Map<String, Object> param = new HashMap<>(1);
         HikLeaveVO hikLeave = new HikLeaveVO();
         HikLeaveVO.PersonData personData = new HikLeaveVO.PersonData();
-        personData.setIndexCodes(new String[]{"909" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
+        personData.setIndexCodes(new String[]{"808" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
         personData.setPersonDataType("person");
         List<HikLeaveVO.PersonData> personDataList = new ArrayList<>();
         personDataList.add(personData);
@@ -199,7 +199,7 @@ public class HikVisionService {
     public void deletePerson(Long id) throws Exception {
         Map<String, String> path = new HashMap<>(1);
         Map<String, Object> param = new HashMap<>(1);
-        String[] personIds = new String[]{"909" + StringUtils.leftPad(id + "", 10, '0')};
+        String[] personIds = new String[]{"808" + StringUtils.leftPad(id + "", 10, '0')};
         param.put("personIds", personIds);
         String url = ARTEMIS_PATH + "/api/resource/v1/person/batch/delete";
         path.put("https://", url);
@@ -220,7 +220,7 @@ public class HikVisionService {
         } else {
             HikPersonVO person = new HikPersonVO();
             person.setPersonName(student.getName());
-            person.setPersonId("909" + StringUtils.leftPad(student.getId() + "", 10, '0'));
+            person.setPersonId("808" + StringUtils.leftPad(student.getId() + "", 10, '0'));
             person.setGender("1");
             HikPersonVO.FaceData faceData = new HikPersonVO.FaceData();
             faceData.setFaceData(face);
@@ -293,7 +293,7 @@ public class HikVisionService {
 
     public static void main(String[] args) throws JsonProcessingException {
         System.out.println(DateUtil.format(new Date(), "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
-        System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "909")));
+        System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "808")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());
         leave.setEndDate(new Date());
@@ -302,7 +302,7 @@ public class HikVisionService {
         leave.setStudent(student);
         HikLeaveVO hikLeave = new HikLeaveVO();
         HikLeaveVO.PersonData personData = new HikLeaveVO.PersonData();
-        personData.setIndexCodes(new String[]{"909" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
+        personData.setIndexCodes(new String[]{"808" + StringUtils.leftPad(leave.getStudent().getId() + "", 10, '0')});
         personData.setPersonDataType("person");
         List<HikLeaveVO.PersonData> personDataList = new ArrayList<>();
         personDataList.add(personData);
