@@ -92,8 +92,9 @@ public class HikVisionService {
         body.put("eventTypes", new Integer[]{196893});
         String url = ARTEMIS_PATH + "/api/acs/v2/door/events";
         path.put("https://", url);
+        log.info("hikInterface Event req:{}",  MAPPER.writeValueAsString(body));
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
-        log.info("event :{}", rs);
+        log.info("hikInterface Event rs:{}", rs);
         HikBaseVO<HikViaVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
         });
         for (HikViaVO.Via viaVo : baseVO.getData().getList()) {
@@ -150,9 +151,9 @@ public class HikVisionService {
         hikLeave.setEndTime(DateUtil.format(leave.getEstimateEndTime(), "yyyy-MM-dd'T'HH:mm:ss") + ".000+08:00");
         String url = ARTEMIS_PATH + "/api/acps/v1/auth_config/add";
         path.put("https://", url);
-        log.info("leave req:{}", MAPPER.writeValueAsString(hikLeave));
+        log.info("bbbbb-hikInterface leave req:{}", MAPPER.writeValueAsString(hikLeave));
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(hikLeave), null, null, "application/json");
-        log.info("leave resp:{}", rs);
+        log.info("bbbbb-hikInterface leave resp:{}", rs);
         extracted(hikLeave, 1);
         sleep(300000);
         extracted(hikLeave, 4);
@@ -174,9 +175,9 @@ public class HikVisionService {
         url = ARTEMIS_PATH + "/api/acps/v1/download/configuration/task/add";
         path.put("https://", url);
         param.put("taskType", type);
-        log.info("task add req:{}", MAPPER.writeValueAsString(param));
+        log.info("bbbbbhikInterface task add req:{}", MAPPER.writeValueAsString(param));
         rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
-        log.info("task add resp:{}", rs);
+        log.info("bbbbbhikInterface task add resp:{}", rs);
         url = ARTEMIS_PATH + "/api/acps/v1/download/configuration/data/add";
         path.put("https://", url);
         param = new HashMap<>(2);
@@ -184,16 +185,16 @@ public class HikVisionService {
         String taskId = ((Map) rsMap.get("data")).get("taskId").toString();
         param.put("taskId", taskId);
         param.put("resourceInfos", hikLeave.getResourceInfos());
-        log.info("data add req:{}", MAPPER.writeValueAsString(param));
+        log.info("bbbbbhikInterface data add req:{}", MAPPER.writeValueAsString(param));
         rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
-        log.info("data add resp:{}", rs);
+        log.info("bbbbbhikInterface data add resp:{}", rs);
         url = ARTEMIS_PATH + "/api/acps/v1/authDownload/task/start";
         path.put("https://", url);
         param = new HashMap<>(1);
         param.put("taskId", taskId);
-        log.info("task start req:{}", MAPPER.writeValueAsString(param));
+        log.info("bbbbbhikInterface task start req:{}", MAPPER.writeValueAsString(param));
         rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
-        log.info("task start resp:{}", rs);
+        log.info("bbbbbhikInterface task start resp:{}", rs);
     }
     @Async
     public void deletePerson(Long id) throws Exception {
@@ -203,8 +204,9 @@ public class HikVisionService {
         param.put("personIds", personIds);
         String url = ARTEMIS_PATH + "/api/resource/v1/person/batch/delete";
         path.put("https://", url);
+        log.info("bbbbbhikInterface deletePerson req:{}",MAPPER.writeValueAsString(param) );
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(param), null, null, "application/json");
-        log.info("deletePerson :{}", rs);
+        log.info("bbbbbhikInterface deletePerson rs:{}", rs);
     }
 
     public void sendPerson(Student student, String face) throws Exception {
@@ -212,11 +214,12 @@ public class HikVisionService {
         if (StringUtils.isNotBlank(student.getFaceId())) {
             Map<String, String> body = new HashMap<>(2);
             body.put("faceId", student.getFaceId());
-            body.put("faceData", "data:image/png;base64," + face);
+            body.put("faceData",face);
             String url = ARTEMIS_PATH + "/api/resource/v1/face/single/update";
             path.put("https://", url);
+            log.info("bbbbbhikInterface updateFace req:{}", MAPPER.writeValueAsString(body));
             String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
-            log.info("updateFace :{}", rs);
+            log.info("bbbbbhikInterface updateFace rs:{}", rs);
         } else {
             HikPersonVO person = new HikPersonVO();
             person.setPersonName(student.getName());
@@ -231,8 +234,9 @@ public class HikVisionService {
             person.setJobNo(person.getPersonId());
             String url = ARTEMIS_PATH + "/api/resource/v2/person/single/add";
             path.put("https://", url);
+            log.info("bbbbbhikInterface addPerson req:{}", MAPPER.writeValueAsString(person));
             String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(person), null, null, "application/json");
-            log.info("addPerson :{}", rs);
+            log.info("bbbbbhikInterface addPerson rs:{}", rs);
             Map rsMap = MAPPER.readValue(rs, Map.class);
             String faceId = ((Map) rsMap.get("data")).get("faceId").toString();
             student.setFaceId(faceId);
@@ -249,8 +253,9 @@ public class HikVisionService {
             card.setCardList(cardList);
             url = ARTEMIS_PATH + "/api/cis/v1/card/bindings";
             path.put("https://", url);
+            log.info("bbbbbhikInterface addCard req:{}", MAPPER.writeValueAsString(card));
             rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(card), null, null, "application/json");
-            log.info("addCard :{}", rs);
+            log.info("bbbbbhikInterface addCard rs:{}", rs);
         }
 
     }
@@ -261,8 +266,9 @@ public class HikVisionService {
         body.put("orgIndexCodes", new String[]{orgCode});
         String url = ARTEMIS_PATH + "/api/resource/v1/org/orgIndexCodes/orgInfo";
         path.put("https://", url);
+        log.info("bbbbbhikInterface orgInfo req:{}", MAPPER.writeValueAsString(body));
         String rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(body), null, null, "application/json");
-        log.info("orgInfo :{}", rs);
+        log.info("bbbbbhikInterface orgInfo rs:{}", rs);
         Map rsMap = MAPPER.readValue(rs, Map.class);
         if (null != ((Map) rsMap.get("data")).get("total")) {
             int total = Integer.parseInt(((Map) rsMap.get("data")).get("total").toString());
@@ -283,16 +289,18 @@ public class HikVisionService {
                 orgList.add(orgVO);
                 url = ARTEMIS_PATH + "/api/resource/v1/org/batch/add";
                 path.put("https://", url);
-                log.info("orgAdd req:{}", MAPPER.writeValueAsString(orgList));
+                log.info("bbbbbhikInterface orgAdd req:{}", MAPPER.writeValueAsString(orgList));
                 rs = ArtemisHttpUtil.doPostStringArtemis(config, path, MAPPER.writeValueAsString(orgList), null, null, "application/json");
-                log.info("orgAdd resp:{}", rs);
+                log.info("bbbbbhikInterface orgAdd resp:{}", rs);
             }
         }
 
     }
 
     public static void main(String[] args) throws JsonProcessingException {
-        System.out.println(DateUtil.format(new Date(), "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
+        System.out.println(("data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAsHCAkIBwsJCQkMCwsNEBoREA8PECAXGBMaJiIoKCYiJSQqMD0zKi05LiQlNUg1OT9BREVEKTNLUEpCTz1DREH" +
+                "/2wBDAQsMDBAOEB8RER9BLCUsQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUH/wAARCAMJBAwDASIAAhEBAxEB" +
+                "/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDsYW3KMrg96lNRN8rZXp3pwbNAAgxS4pM4oJoAWikooAGGeopnlIeopxz60mTQBE1vEc/IKjEckX+rfI9G5qwaYaAKn2qYMfMtjt9VbP6VC2pw7yGLJ/").replaceAll("data:image/jpeg;base64,/","").replaceAll("data:image/png;base64,/",""));
         System.out.println((StringUtils.startsWith("6d6d351d441868145280ab73959f5", "808")));
         Leave leave = new Leave();
         leave.setStartDate(new Date());

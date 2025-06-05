@@ -357,7 +357,7 @@ public class UserService {
         Student student = studentDao.findById(picVO.getObjectId()).get();
         if(null!=student){
             try {
-                hikVisionService.sendPerson(student,Base64.encode(picVO.getData()));
+                hikVisionService.sendPerson(student,Base64.encode(picVO.getData()).replaceAll("data:image/jpeg;base64,/","").replaceAll("data:image/png;base64,/",""));
                 studentDao.save(student);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

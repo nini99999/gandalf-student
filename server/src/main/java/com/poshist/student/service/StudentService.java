@@ -159,7 +159,7 @@ public class StudentService {
                 InputStream is = zipFile.getInputStream(zipEntry);
                 picVO.setData(IOUtils.toByteArray(is));
                 userService.uploadPic(picVO);
-                sendHikPerson(student, Base64.encode(picVO.getData()));
+                sendHikPerson(student, Base64.encode(picVO.getData()).replaceAll("data:image/jpeg;base64,/","").replaceAll("data:image/png;base64,/",""));
             }
         }
     }
