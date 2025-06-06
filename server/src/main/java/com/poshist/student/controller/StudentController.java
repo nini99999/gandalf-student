@@ -253,7 +253,7 @@ public class StudentController {
         studentVO.setCode((String) paramMap.get("code"));
         String userName = (String) auth.getPrincipal();
         User user = userService.getUserByName(userName);
-        pageVO = studentService.getStudentList(studentVO, pageVO, user.getDepartment().getId());
+        pageVO = studentService.getStudentList(studentVO, pageVO, user.getDepartment().getId(),null!=paramMap.get("isSuccess")?Boolean.valueOf(paramMap.get("isSuccess").toString()):null);
         baseVO.setData(pageVO);
         return baseVO;
     }

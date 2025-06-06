@@ -89,6 +89,8 @@ public class HikVisionService {
         Date date = new Date();
         body.put("startTime", DateUtil.format(DateUtil.offsetMinute(date, -5), "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
         body.put("endTime", DateUtil.format(date, "yyyy-MM-dd'T'HH:mm:") + "00+08:00");
+        body.put("sort", "eventTime");
+        body.put("order", "asc");
         body.put("eventTypes", new Integer[]{196893});
         String url = ARTEMIS_PATH + "/api/acs/v2/door/events";
         path.put("https://", url);
@@ -98,7 +100,7 @@ public class HikVisionService {
         HikBaseVO<HikViaVO> baseVO = MAPPER.readValue(rs, new TypeReference<HikBaseVO<HikViaVO>>() {
         });
         for (HikViaVO.Via viaVo : baseVO.getData().getList()) {
-            if (StringUtils.startsWith(viaVo.getPersonId(), "909")) {
+            if (StringUtils.startsWith(viaVo.getPersonId(), "808")) {
                 if (NumberUtil.isNumber(viaVo.getPersonId().substring(3))) {
                     Long id = Long.valueOf(viaVo.getPersonId().substring(3));
                     Optional<Student> optionalStudent = studentDao.findById(id);

@@ -8,5 +8,5 @@ import java.util.Date;
 import java.util.List;
 
 public interface ViaDao extends CrudRepository<Via, Long>, JpaSpecificationExecutor<Via> {
-    public List<Via> getAllByCardCodeAndCardTypeAndViaTimeBetween(String cardCode, int cardType, Date startTime, Date endTime);
+    public List<Via> getAllByStudentIdAndCardTypeAndViaTimeBetween(Long studentId, int cardType, Date startTime, Date endTime);
 }

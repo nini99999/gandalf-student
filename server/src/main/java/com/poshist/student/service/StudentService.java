@@ -57,7 +57,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 @Service
-@Transactional
 @Slf4j
 public class StudentService {
 
@@ -94,7 +93,7 @@ public class StudentService {
         Leave leave = leaveDao.findById(LeaveId).get();
         Date startTime = CommonUtils.timeToDayStart(leave.getEstimateStartTime());
         Date endTime = CommonUtils.timeToDayEnd(leave.getEstimateEndTime());
-        List<Via> vias = viaDao.getAllByCardCodeAndCardTypeAndViaTimeBetween(leave.getStudent().getCardCode().toUpperCase(), 0, startTime, endTime);
+        List<Via> vias = viaDao.getAllByStudentIdAndCardTypeAndViaTimeBetween(leave.getStudent().getId(), 0, startTime, endTime);
         List<ViaVO> viaVOS = new ArrayList<>();
         for (Via via : vias) {
             viaVOS.add(new ViaVO(via));
@@ -102,6 +101,7 @@ public class StudentService {
         return viaVOS;
     }
 
+    @Transactional
     public LeaveLimitVO saveLeaveLimit(LeaveLimitVO leaveLimitVO) {
         LeaveLimit leaveLimit = leaveLimitDao.findById(leaveLimitVO.getId()).get();
         leaveLimit.setLimitValue(leaveLimitVO.getLimitValue());
@@ -151,7 +151,7 @@ public class StudentService {
         while ((zipEntry = zis.getNextEntry()) != null) {
             String name = zipEntry.getName();
             name = name.substring(0, name.indexOf("."));
-            Student student = studentDao.findFirstByCodeAndStatus(name,0);
+            Student student = studentDao.findFirstByCodeAndStatus(name, 0);
             if (null != student) {
                 PicVO picVO = new PicVO();
                 picVO.setObjectId(student.getId());
@@ -159,7 +159,7 @@ public class StudentService {
                 InputStream is = zipFile.getInputStream(zipEntry);
                 picVO.setData(IOUtils.toByteArray(is));
                 userService.uploadPic(picVO);
-                sendHikPerson(student, Base64.encode(picVO.getData()).replaceAll("data:image/jpeg;base64,/","").replaceAll("data:image/png;base64,/",""));
+                sendHikPerson(student, Base64.encode(picVO.getData()).replaceAll("data:image/jpeg;base64,/", "").replaceAll("data:image/png;base64,/", ""));
             }
         }
     }
@@ -192,7 +192,7 @@ public class StudentService {
             }
             //判断学籍号或证件号是否存在
             if (null != row.getCell(3) && StringUtils.isNotEmpty(getStringCellValue(row, 3))) {
-                if (null != studentDao.findFirstByCodeAndStatus(getStringCellValue(row, 3),0)) {
+                if (null != studentDao.findFirstByCodeAndStatus(getStringCellValue(row, 3), 0)) {
                     rsCell.setCellValue("学员证号已存在");
                     continue;
                 }
@@ -453,8 +453,10 @@ public class StudentService {
      *
      * @param via
      */
+    @Transactional
+
     public void studentVia(Via via) {
-        Student student = studentDao.findFirstByCardCodeAndStatus(via.getCardCode(), Constant.VALID);
+        Student student = studentDao.findById(via.getStudentId()).get();
         if (null != student) {
             student.setInStatus(via.getViaType());
             student.setLastViaTime(via.getViaTime());
@@ -723,7 +725,7 @@ public class StudentService {
         }
     }
 
-    public PageVO getStudentList(StudentVO studentVO, PageVO pageVO, Long userDepartmentId) {
+    public PageVO getStudentList(StudentVO studentVO, PageVO pageVO, Long userDepartmentId, Boolean isSuccess) {
         userDepartmentId = varDepartment(userDepartmentId);
         Long finalUserDepartmentId = userDepartmentId;
         Pageable pageable = PageRequest.of(pageVO.getPageCount() - 1, pageVO.getPageSize());
@@ -737,6 +739,11 @@ public class StudentService {
                 list.add(cb.equal(root.get("status"), 0));
                 if (null != studentVO.getDepartmentId()) {
                     list.add(cb.equal(departmentId, studentVO.getDepartmentId()));
+                }
+                if (Boolean.TRUE.equals(isSuccess)) {
+                    list.add(cb.isNotNull(root.get("faceId")));
+                } else if (Boolean.FALSE.equals(isSuccess)) {
+                    list.add(cb.isNull(root.get("faceId")));
                 }
                 if (null != studentVO.getCode()) {
                     list.add(cb.like(root.get("code"), "%" + studentVO.getCode() + "%"));

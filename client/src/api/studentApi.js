@@ -1,11 +1,12 @@
 import BaseApi from "./BaseApi";
 
 class StudentApi extends BaseApi {
-    getList({name, code, departmentId, pageSize = 20, pageCount = 1}) {
+    getList({name, code, departmentId,isSuccess, pageSize = 20, pageCount = 1}) {
         return this.httpPost('/student/getStudentList', {
             name,
             code,
             departmentId,
+            isSuccess,
             pageSize,
             pageCount
         }, {}, '获取学员列表失败')

@@ -14,7 +14,10 @@ export const status = [
     {name: '超时返回', id: 4},
     {name: '非假外出', id: 5}
 ];
-
+export const synacStatus = [
+    {name: '成功', id: true},
+    {name: '未成功', id: false},
+];
 export default {
     getList(params) {
         params.pageCount++;

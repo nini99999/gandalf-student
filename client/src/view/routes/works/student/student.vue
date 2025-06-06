@@ -18,6 +18,7 @@
                 <panel-search>
                     <combobox class="component" mode="tree" :source="department"
                               v-model="departmentId"></combobox>
+                    <combobox :source="synacStatus" v-model="isSuccess"></combobox>
                     <input class="input" v-model="search1" placeholder="请输入学籍号">
                     <input class="input" v-model="name" placeholder="请输入姓名">
                     <a class="btn normal ok2" @click="onSearch">搜索</a>
@@ -59,9 +60,9 @@
     import panelSearch from '../panel-search'
     import ctable from '../../../component/ctable'
     import combobox from '../../../component/combobox'
-    import studentController from '../../../../controller/student'
+    import studentController, {synacStatus} from '../../../../controller/student'
     import personController from '../../../../controller/person'
-  import checkbox from '../../../component/checkbox'
+    import checkbox from '../../../component/checkbox'
     export default {
 
         components: {panel, panelTitle, panelSearch, ctable, combobox,checkbox},
@@ -73,9 +74,11 @@
                 search1: '',
                 allChecked:false,
                 name: '',
+                isSuccess: undefined,
                 ids:[],
                 departmentId: '',
                 department: [{name: '全部', id: 0}],
+                synacStatus: [{name: '请选择同步状态'}, ...synacStatus],
                 data: [],
                 dataCount: 0,
                 pageSize: 20,
@@ -129,6 +132,9 @@
                 }
                 if (this.name) {
                     params.name = this.name;
+                }
+                if (this.isSuccess != undefined) {
+                    params.isSuccess = this.isSuccess;
                 }
                 let {data, dataCount} = await studentController.getList(params);
                 this.data = data;
