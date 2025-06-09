@@ -19,7 +19,7 @@
                     <combobox class="component" mode="tree" :source="department"
                               v-model="departmentId"></combobox>
                     <combobox :source="synacStatus" v-model="isSuccess"></combobox>
-                    <input class="input" v-model="search1" placeholder="请输入学籍号">
+                    <input class="input" v-model="code" placeholder="请输入学籍号">
                     <input class="input" v-model="name" placeholder="请输入姓名">
                     <a class="btn normal ok2" @click="onSearch">搜索</a>
                     <a class="btn normal ok2" @click="batchDelete">批量删除</a>
@@ -74,6 +74,7 @@
                 search1: '',
                 allChecked:false,
                 name: '',
+                code:'',
                 isSuccess: undefined,
                 ids:[],
                 departmentId: '',
@@ -132,6 +133,9 @@
                 }
                 if (this.name) {
                     params.name = this.name;
+                }
+                if (this.code) {
+                    params.code = this.code;
                 }
                 if (this.isSuccess != undefined) {
                     params.isSuccess = this.isSuccess;
