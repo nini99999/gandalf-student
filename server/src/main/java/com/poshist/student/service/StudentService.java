@@ -426,7 +426,7 @@ public class StudentService {
         }
         //超期
         Integer[] status = {1, 3};
-        leaves = leaveDao.findAllByStatusNotInAndEstimateEndTimeLessThanEqual(status, now);
+        leaves = leaveDao.findAllByStatusInAndEstimateEndTimeLessThanEqual(status, now);
         for (Leave leave : leaves) {
             //未归
             if (0 == leave.getStudent().getInStatus()) {

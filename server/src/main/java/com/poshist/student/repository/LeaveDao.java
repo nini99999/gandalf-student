@@ -11,7 +11,7 @@ import java.util.List;
 public interface LeaveDao   extends CrudRepository<Leave, Long>, JpaSpecificationExecutor<Leave> {
     List<Leave> findAllByEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqual( Date date1, Date date2);
     List<Leave> findAllByStatusAndEstimateStartTimeLessThanEqualAndEstimateEndTimeGreaterThanEqual(Integer status, Date date1, Date date2);
-    public List<Leave> findAllByStatusNotInAndEstimateEndTimeLessThanEqual(Integer[] status,Date date);
+    List<Leave> findAllByStatusInAndEstimateEndTimeLessThanEqual(Integer[] status,Date date);
     @Query(nativeQuery = true, value = "select u.date,count(u.date)-1 from(select c.date_name as date from t_sys_calendar_info c where c.date_name>=?1 and c.date_name<=?2 UNION " +
             "ALL select DATE_FORMAT(t.estimate_start_time,'%Y-%m-%d') from t_st_leave_info t where t.estimate_start_time>=?1 and t.estimate_start_time<=?2  and t.data_status=0) " +
             "u group by u.date order by u.date")
