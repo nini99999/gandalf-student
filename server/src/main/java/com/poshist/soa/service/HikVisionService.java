@@ -168,7 +168,7 @@ public class HikVisionService {
 
     }
 
-    @Scheduled(cron = "0 0  * * * ?")
+    @Scheduled(cron = "0 0/30  * * * ?")
     public void download() throws Exception {
         List<HikLeaveVO.ResourceInfo> resourceInfoList = new ArrayList<>();
         for (String door : doors) {
@@ -178,7 +178,7 @@ public class HikVisionService {
             resourceInfoList.add(resourceInfo);
         }
         extracted(resourceInfoList, 1);
-        sleep(300000);
+        sleep(200000);
         extracted(resourceInfoList, 4);
     }
 
